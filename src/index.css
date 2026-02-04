@@ -135,3 +135,73 @@ input:focus {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
 }
+
+/* Base Utility Classes */
+.flex {
+  display: flex;
+}
+.items-center {
+  align-items: center;
+}
+.justify-center {
+  justify-content: center;
+}
+.min-h-screen {
+  min-height: 100vh;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-col {
+  flex-direction: column;
+}
+.bg-bg-main {
+  background-color: var(--bg-main);
+}
+.gap-4 {
+  gap: 1rem;
+}
+.max-w-4xl {
+  max-width: 56rem;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.py-8 {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+.w-12 {
+  width: 3rem;
+}
+.h-12 {
+  height: 3rem;
+}
+.border-4 {
+  border-width: 4px;
+}
+.border-primary {
+  border-color: var(--primary);
+}
+.border-t-transparent {
+  border-top-color: transparent;
+}
+.rounded-full {
+  border-radius: 9999px;
+}
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
