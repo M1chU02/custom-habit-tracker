@@ -98,15 +98,19 @@ const Dashboard: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 py-8 md:py-16">
         {/* Header */}
         <header className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-8">
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-lg shadow-primary/10">
-              <img
-                src={user?.photoURL || ""}
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
+              className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-lg shadow-primary/10 flex-shrink-0 bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+              {user?.photoURL ? (
+                <img
+                  src={user.photoURL}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span>{user?.displayName?.charAt(0)}</span>
+              )}
             </motion.div>
             <div>
               <h2 className="text-2xl font-bold tracking-tight">
@@ -120,7 +124,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="ghost"
             onClick={logout}
-            className="p-2.5 rounded-xl bg-white/5 border border-white/5">
+            className="p-3.5 rounded-2xl bg-white/5 border border-white/5">
             <LogOut size={20} />
           </Button>
         </header>
@@ -310,19 +314,23 @@ const Dashboard: React.FC = () => {
                       </h4>
                     </div>
 
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                      <button
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                      <motion.button
+                        whileHover={{ scale: 1.1, y: -1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => toggleArchive(habit)}
-                        className="p-2.5 text-text-dim hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                        className="p-3 text-text-dim hover:text-white hover:bg-white/10 rounded-xl transition-colors"
                         title="Archiwizuj">
                         <Archive size={18} />
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1, y: -1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => deleteHabit(habit.id)}
-                        className="p-2.5 text-text-dim hover:text-error hover:bg-error/10 rounded-lg transition-colors"
+                        className="p-3 text-text-dim hover:text-error hover:bg-error/10 rounded-xl transition-colors"
                         title="Usuń">
                         <Trash2 size={18} />
-                      </button>
+                      </motion.button>
                     </div>
                   </motion.div>
                 );
@@ -347,11 +355,13 @@ const Dashboard: React.FC = () => {
                   <span className="text-text-dim font-medium">
                     {habit.name}
                   </span>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.05, y: -1 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => toggleArchive(habit)}
-                    className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity bg-primary/10 px-3 py-1.5 rounded-lg">
+                    className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-all bg-primary/10 px-4 py-2 rounded-xl shadow-sm hover:shadow-primary/20">
                     Przywróć
-                  </button>
+                  </motion.button>
                 </motion.div>
               ))}
             </div>
