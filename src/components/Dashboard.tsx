@@ -92,16 +92,16 @@ const Dashboard: React.FC = () => {
       : 0;
 
   return (
-    <div className="min-h-screen">
-      <div className="bg-mesh-gradient" />
+    <div className="min-h-screen relative overflow-hidden">
+      <div className="bg-mesh-premium" />
 
-      <div className="max-w-4xl mx-auto px-4 py-8 md:py-16">
+      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20 relative z-10">
         {/* Header */}
-        <header className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-8">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
+          <div className="flex items-center gap-6">
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-lg shadow-primary/10 flex-shrink-0 bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              className="w-20 h-20 rounded-3xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 flex-shrink-0 bg-primary/10 flex items-center justify-center text-primary font-black text-3xl">
               {user?.photoURL ? (
                 <img
                   src={user.photoURL}
@@ -113,107 +113,124 @@ const Dashboard: React.FC = () => {
               )}
             </motion.div>
             <div>
-              <h2 className="text-2xl font-bold tracking-tight">
-                Cześć, {user?.displayName?.split(" ")[0]}!
-              </h2>
-              <p className="text-text-dim text-sm font-medium">
+              <motion.h2
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-4xl font-black tracking-tight mb-1">
+                Cześć,{" "}
+                <span className="text-gradient-vibrant">
+                  {user?.displayName?.split(" ")[0]}
+                </span>
+                !
+              </motion.h2>
+              <p className="text-text-dim text-lg font-semibold flex items-center gap-2">
+                <Calendar size={18} className="text-primary" />
                 {format(new Date(), "EEEE, d MMMM", { locale: pl })}
               </p>
             </div>
           </div>
           <Button
-            variant="ghost"
+            variant="secondary"
             onClick={logout}
-            className="p-3.5 rounded-2xl bg-white/5 border border-white/5">
+            className="self-start md:self-center gap-3 px-6 py-3 border-white/10 shadow-xl">
             <LogOut size={20} />
+            Wyloguj
           </Button>
         </header>
 
         {/* Stats Overview */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           <Card
             glass
-            className="flex flex-col justify-between border-primary/20 bg-primary/5">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-text-muted text-sm font-semibold uppercase tracking-wider">
+            className="glass-premium card-hover flex flex-col justify-between p-8 border-primary/20 bg-primary/5">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
                 Postęp dnia
               </span>
-              <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                <CheckCircle2 size={18} />
+              <div className="p-3 bg-primary/20 rounded-2xl text-primary shadow-inner shadow-white/10">
+                <CheckCircle2 size={22} />
               </div>
             </div>
             <div className="flex items-end justify-between">
-              <span className="text-4xl font-bold font-heading">
+              <span className="text-5xl font-black font-heading text-gradient">
                 {progressPercent}%
               </span>
-              <span className="text-text-dim text-sm font-medium">
+              <span className="text-text-dim text-sm font-bold bg-white/5 px-3 py-1 rounded-lg">
                 {completedCount}/{activeHabits.length}
               </span>
             </div>
-            <div className="mt-5 h-2 bg-white/5 rounded-full overflow-hidden">
+            <div className="mt-8 h-3 bg-white/5 rounded-full overflow-hidden border border-white/5 p-[2px]">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                className="h-full bg-primary shadow-[0_0_12px_rgba(139,92,246,0.5)]"
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_20px_var(--primary-glow)]"
               />
             </div>
           </Card>
 
-          <Card glass className="flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-text-muted text-sm font-semibold uppercase tracking-wider">
+          <Card
+            glass
+            className="glass-premium card-hover flex flex-col justify-between p-8 border-secondary/20 bg-secondary/5">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
                 Streak
               </span>
-              <div className="p-2 bg-secondary/10 rounded-lg text-secondary">
-                <TrendingUp size={18} />
+              <div className="p-3 bg-secondary/20 rounded-2xl text-secondary shadow-inner shadow-white/10">
+                <TrendingUp size={22} />
               </div>
             </div>
             <div className="flex items-end justify-between">
-              <span className="text-4xl font-bold font-heading text-secondary">
-                7 dni
-              </span>
-              <span className="text-secondary text-xs bg-secondary/10 px-2.5 py-1 rounded-full font-bold">
+              <div className="flex flex-col">
+                <span className="text-5xl font-black font-heading text-gradient-vibrant">
+                  7 dni
+                </span>
+              </div>
+              <span className="text-white text-[10px] bg-secondary px-3 py-1 rounded-full font-black uppercase tracking-wider shadow-lg shadow-secondary/30">
                 Rekord!
               </span>
             </div>
-            <p className="mt-5 text-text-dim text-xs font-medium">
+            <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
               Prawie tam! Jeszcze 3 dni do odznaki.
             </p>
           </Card>
 
-          <Card glass className="flex flex-col justify-between">
-            <div className="flex items-center justify-between mb-6">
-              <span className="text-text-muted text-sm font-semibold uppercase tracking-wider">
+          <Card
+            glass
+            className="glass-premium card-hover flex flex-col justify-between p-8 border-accent/20 bg-accent/5">
+            <div className="flex items-center justify-between mb-8">
+              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
                 Aktywne
               </span>
-              <div className="p-2 bg-accent/10 rounded-lg text-accent">
-                <Calendar size={18} />
+              <div className="p-3 bg-accent/20 rounded-2xl text-accent shadow-inner shadow-white/10">
+                <Calendar size={22} />
               </div>
             </div>
             <div className="flex items-end justify-between">
-              <span className="text-4xl font-bold font-heading text-accent">
+              <span className="text-5xl font-black font-heading text-gradient">
                 {activeHabits.length}
               </span>
-              <span className="text-text-dim text-sm font-medium italic">
+              <span className="text-text-dim text-sm font-bold italic opacity-60">
                 nawyki
               </span>
             </div>
-            <p className="mt-5 text-text-dim text-xs font-medium">
+            <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
               Zorganizuj swój dzień lepiej.
             </p>
           </Card>
         </section>
 
         {/* Habits List */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-bold tracking-tight">Twoje Nawyki</h3>
+        <section className="mb-20">
+          <div className="flex items-center justify-between mb-10">
+            <h3 className="text-3xl font-black tracking-tight text-gradient">
+              Twoje Nawyki
+            </h3>
             <Button
-              size="sm"
+              variant="primary"
               onClick={() => setIsAddingHabit(true)}
-              className="gap-2 rounded-xl px-4">
-              <Plus size={18} />
+              className="gap-3 rounded-2xl px-6 shadow-primary-glow">
+              <Plus size={20} />
               Nowy nawyk
             </Button>
           </div>
@@ -221,12 +238,14 @@ const Dashboard: React.FC = () => {
           <AnimatePresence mode="wait">
             {isAddingHabit && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="mb-6">
-                <Card className="p-4 border-primary/30 bg-primary/5">
-                  <form onSubmit={handleAddHabit} className="flex gap-3">
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="mb-8">
+                <Card className="glass-premium p-6 border-primary/30 bg-primary/5">
+                  <form
+                    onSubmit={handleAddHabit}
+                    className="flex flex-col md:flex-row gap-4">
                     <input
                       autoFocus
                       type="text"
@@ -235,12 +254,19 @@ const Dashboard: React.FC = () => {
                       placeholder="Co chcesz śledzić?"
                       className="flex-1"
                     />
-                    <Button type="submit">Dodaj</Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => setIsAddingHabit(false)}>
-                      Anuluj
-                    </Button>
+                    <div className="flex gap-3">
+                      <Button
+                        type="submit"
+                        className="flex-1 md:flex-none px-10">
+                        Dodaj
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setIsAddingHabit(false)}
+                        className="px-6">
+                        Anuluj
+                      </Button>
+                    </div>
                   </form>
                 </Card>
               </motion.div>
@@ -250,19 +276,22 @@ const Dashboard: React.FC = () => {
           <motion.div layout className="space-y-4">
             {activeHabits.length === 0 && !isAddingHabit && (
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-20 border-2 border-dashed border-border rounded-3xl">
-                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-border">
-                  <Target className="text-text-dim" size={32} />
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="text-center py-24 glass-premium rounded-[3rem] border-dashed border-white/10">
+                <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 border border-white/10 shadow-2xl animate-float">
+                  <Target className="text-primary" size={48} />
                 </div>
-                <p className="text-text-dim mb-6 font-medium">
-                  Nie masz jeszcze żadnych aktywnych nawyków.
+                <h4 className="text-2xl font-black mb-3">
+                  Zacznij swoją podróż
+                </h4>
+                <p className="text-text-dim mb-10 max-w-xs mx-auto font-medium">
+                  Nie masz jeszcze żadnych aktywnych nawyków. Pora to zmienić!
                 </p>
                 <Button
-                  variant="secondary"
+                  variant="primary"
                   onClick={() => setIsAddingHabit(true)}
-                  className="rounded-xl">
+                  className="rounded-2xl px-12 shadow-primary-glow">
                   Stwórz pierwszy nawyk
                 </Button>
               </motion.div>
@@ -279,57 +308,56 @@ const Dashboard: React.FC = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     key={habit.id}
                     className={clsx(
-                      "group flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300",
+                      "group flex items-center gap-6 p-5 rounded-3xl border transition-all duration-500 glass-premium",
                       isCompleted
-                        ? "bg-primary/[0.08] border-primary/30 shadow-[0_0_20px_rgba(139,92,246,0.1)]"
-                        : "bg-bg-card border-border hover:border-border-hover hover:bg-bg-card-hover shadow-sm",
+                        ? "bg-primary/[0.05] border-primary/30 shadow-[0_0_30px_rgba(139,92,246,0.15)]"
+                        : "bg-white/[0.02] border-white/5 hover:border-white/10 hover:bg-white/[0.04]",
                     )}>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
+                      whileHover={{ scale: 1.1 }}
                       onClick={() => toggleHabit(habit.id)}
                       className={clsx(
-                        "flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300",
+                        "flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-xl",
                         isCompleted
-                          ? "bg-primary text-white shadow-lg shadow-primary/30"
-                          : "bg-white/5 text-text-dim group-hover:bg-white/10 group-hover:text-text-muted",
+                          ? "bg-primary text-white shadow-primary/30"
+                          : "bg-white/5 text-text-dim border border-white/10 hover:border-white/20 hover:bg-white/10",
                       )}>
                       {isCompleted ? (
-                        <CheckCircle2 size={22} />
+                        <CheckCircle2 size={28} />
                       ) : (
-                        <Circle size={22} className="opacity-50" />
+                        <Circle size={28} className="opacity-30" />
                       )}
                     </motion.button>
 
-                    <div
-                      className="flex-1 cursor-pointer"
-                      onClick={() => toggleHabit(habit.id)}>
+                    <div className="flex-1 min-w-0">
                       <h4
                         className={clsx(
-                          "text-lg font-semibold transition-all duration-300",
+                          "text-xl font-bold transition-all duration-300",
                           isCompleted
-                            ? "text-primary/60 line-through italic"
+                            ? "text-text-muted line-through opacity-50"
                             : "text-text-main",
                         )}>
                         {habit.name}
                       </h4>
                     </div>
 
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-4 group-hover:translate-x-0">
                       <motion.button
-                        whileHover={{ scale: 1.1, y: -1 }}
+                        whileHover={{ scale: 1.15, y: -2 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => toggleArchive(habit)}
-                        className="p-3 text-text-dim hover:text-white hover:bg-white/10 rounded-xl transition-colors"
+                        className="p-4 text-text-dim hover:text-primary hover:bg-primary/10 rounded-2xl transition-all"
                         title="Archiwizuj">
-                        <Archive size={18} />
+                        <Archive size={20} />
                       </motion.button>
                       <motion.button
-                        whileHover={{ scale: 1.1, y: -1 }}
+                        whileHover={{ scale: 1.15, y: -2 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => deleteHabit(habit.id)}
-                        className="p-3 text-text-dim hover:text-error hover:bg-error/10 rounded-xl transition-colors"
+                        className="p-4 text-text-dim hover:text-error hover:bg-error/10 rounded-2xl transition-all"
                         title="Usuń">
-                        <Trash2 size={18} />
+                        <Trash2 size={20} />
                       </motion.button>
                     </div>
                   </motion.div>
@@ -339,27 +367,26 @@ const Dashboard: React.FC = () => {
           </motion.div>
         </section>
 
-        {/* Archive Section */}
+        {/* Archives Section */}
         {archivedHabits.length > 0 && (
-          <section className="mt-12 pt-8 border-t border-border">
-            <button className="flex items-center gap-2 text-text-dim hover:text-text-muted transition-colors mb-6 text-sm font-semibold uppercase tracking-wider">
-              <Archive size={16} />
-              Zarchiwizowane ({archivedHabits.length})
-            </button>
+          <section className="mb-20">
+            <h3 className="text-xl font-black mb-6 text-text-dim uppercase tracking-widest px-2">
+              Zarchiwizowane
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {archivedHabits.map((habit) => (
                 <motion.div
                   layout
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
                   key={habit.id}
-                  className="flex items-center justify-between p-4 bg-white/[0.03] rounded-2xl text-sm border border-border/50 group">
-                  <span className="text-text-dim font-medium">
-                    {habit.name}
-                  </span>
+                  className="group flex items-center justify-between p-4 px-6 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all">
+                  <span className="text-text-dim font-bold">{habit.name}</span>
                   <motion.button
                     whileHover={{ scale: 1.05, y: -1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => toggleArchive(habit)}
-                    className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-all bg-primary/10 px-4 py-2 rounded-xl shadow-sm hover:shadow-primary/20">
+                    className="text-xs font-black text-primary opacity-0 group-hover:opacity-100 transition-all bg-primary/10 px-5 py-2.5 rounded-xl border border-primary/20 hover:bg-primary hover:text-white shadow-lg shadow-primary/20">
                     Przywróć
                   </motion.button>
                 </motion.div>
