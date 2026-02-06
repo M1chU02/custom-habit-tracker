@@ -52,7 +52,7 @@ const LoginPage: React.FC = () => {
             <Button
               size="lg"
               onClick={login}
-              className="w-full flex items-center justify-center gap-4 py-6 shadow-primary-glow group">
+              className="w-full shadow-primary-glow group">
               <LogIn
                 size={24}
                 className="group-hover:translate-x-1 transition-transform"
@@ -68,14 +68,6 @@ const LoginPage: React.FC = () => {
             </div>
           </motion.div>
         </div>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-center mt-12 text-text-dim text-sm font-bold uppercase tracking-[0.3em] opacity-40">
-          Design by Antigravity
-        </motion.p>
       </motion.div>
     </div>
   );

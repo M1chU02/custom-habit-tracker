@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
           <Button
             variant="secondary"
             onClick={logout}
-            className="self-start md:self-center gap-3 px-6 py-3 border-white/10 shadow-xl">
+            className="self-start md:self-center border-white/10 shadow-xl">
             <LogOut size={20} />
             Wyloguj
           </Button>
@@ -229,7 +229,7 @@ const Dashboard: React.FC = () => {
             <Button
               variant="primary"
               onClick={() => setIsAddingHabit(true)}
-              className="gap-3 rounded-2xl px-6 shadow-primary-glow">
+              className="rounded-2xl shadow-primary-glow">
               <Plus size={20} />
               Nowy nawyk
             </Button>
@@ -255,15 +255,12 @@ const Dashboard: React.FC = () => {
                       className="flex-1"
                     />
                     <div className="flex gap-3">
-                      <Button
-                        type="submit"
-                        className="flex-1 md:flex-none px-10">
+                      <Button type="submit" className="flex-1 md:flex-none">
                         Dodaj
                       </Button>
                       <Button
                         variant="ghost"
-                        onClick={() => setIsAddingHabit(false)}
-                        className="px-6">
+                        onClick={() => setIsAddingHabit(false)}>
                         Anuluj
                       </Button>
                     </div>
