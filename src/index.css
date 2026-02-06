@@ -41,7 +41,11 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  cursor: default; /* Reset cursor */
+}
+
+html,
+body {
+  cursor: default;
 }
 
 body {
@@ -60,6 +64,20 @@ a,
 input[type="submit"],
 .cursor-pointer {
   cursor: pointer !important;
+}
+
+/* Ensure all children of interactive elements inherit pointer cursor */
+button *,
+a *,
+input[type="submit"] *,
+.cursor-pointer * {
+  cursor: pointer !important;
+}
+
+/* Disabled state cursor */
+button:disabled,
+button:disabled * {
+  cursor: not-allowed !important;
 }
 
 /* Typography Overhaul */
