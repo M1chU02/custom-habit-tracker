@@ -87,4 +87,47 @@ export const habitService = {
       });
     }
   },
+
+  calculateStreak: async (
+    userId: string,
+    activeHabitIds: string[],
+  ): Promise<number> => {
+    // If no active habits, streak is 0
+    if (activeHabitIds.length === 0) {
+      return 0;
+    }
+
+    let streak = 0;
+    const today = new Date();
+
+    // Check backwards from today
+    for (let i = 0; i < 365; i++) {
+      // Limit to 1 year
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateString = checkDate.toISOString().split("T")[0];
+
+      const dayRef = doc(db, "users", userId, "days", dateString);
+      const dayDoc = await getDoc(dayRef);
+
+      if (!dayDoc.exists()) {
+        // No data for this day means streak is broken
+        break;
+      }
+
+      const dayData = dayDoc.data() as DayCompletion;
+      const allCompleted = activeHabitIds.every(
+        (habitId) => dayData.checks[habitId] === true,
+      );
+
+      if (allCompleted) {
+        streak++;
+      } else {
+        // Streak is broken
+        break;
+      }
+    }
+
+    return streak;
+  },
 };

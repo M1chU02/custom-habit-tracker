@@ -26,6 +26,7 @@ const Dashboard: React.FC = () => {
   const [dayData, setDayData] = useState<DayCompletion | null>(null);
   const [isAddingHabit, setIsAddingHabit] = useState(false);
   const [newHabitName, setNewHabitName] = useState("");
+  const [currentStreak, setCurrentStreak] = useState<number>(0);
 
   const today = format(new Date(), "yyyy-MM-dd");
 
@@ -47,6 +48,17 @@ const Dashboard: React.FC = () => {
       unsubscribeDay();
     };
   }, [user, today]);
+
+  // Calculate streak when habits change
+  useEffect(() => {
+    if (!user) return;
+
+    const activeHabitIds = habits.filter((h) => !h.isArchived).map((h) => h.id);
+
+    habitService
+      .calculateStreak(user.uid, activeHabitIds)
+      .then(setCurrentStreak);
+  }, [user, habits]);
 
   const handleAddHabit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,15 +195,21 @@ const Dashboard: React.FC = () => {
             <div className="flex items-end justify-between">
               <div className="flex flex-col">
                 <span className="text-5xl font-black font-heading text-gradient-vibrant">
-                  7 dni
+                  {currentStreak} {currentStreak === 1 ? "dzień" : "dni"}
                 </span>
               </div>
-              <span className="text-white text-[10px] bg-secondary px-3 py-1 rounded-full font-black uppercase tracking-wider shadow-lg shadow-secondary/30">
-                Rekord!
-              </span>
+              {currentStreak >= 7 && (
+                <span className="text-white text-[10px] bg-secondary px-3 py-1 rounded-full font-black uppercase tracking-wider shadow-lg shadow-secondary/30">
+                  Rekord!
+                </span>
+              )}
             </div>
             <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
-              Prawie tam! Jeszcze 3 dni do odznaki.
+              {currentStreak === 0
+                ? "Zacznij budować swój streak!"
+                : currentStreak < 7
+                  ? `Prawie tam! Jeszcze ${7 - currentStreak} ${7 - currentStreak === 1 ? "dzień" : "dni"} do odznaki.`
+                  : "Świetna robota! Kontynuuj!"}
             </p>
           </Card>
 
