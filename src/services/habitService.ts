@@ -130,4 +130,59 @@ export const habitService = {
 
     return streak;
   },
+
+  getExtendedStats: async (
+    userId: string,
+    activeHabitIds: string[],
+    daysBack: number = 30,
+  ): Promise<{
+    completionRate: number;
+    perfectDays: number;
+  }> => {
+    if (activeHabitIds.length === 0) {
+      return { completionRate: 0, perfectDays: 0 };
+    }
+
+    let totalPossibleCompletions = 0;
+    let actualCompletions = 0;
+    let perfectDays = 0;
+    const today = new Date();
+
+    for (let i = 0; i < daysBack; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateString = checkDate.toISOString().split("T")[0];
+
+      const dayRef = doc(db, "users", userId, "days", dateString);
+      const dayDoc = await getDoc(dayRef);
+
+      if (dayDoc.exists()) {
+        const dayData = dayDoc.data() as DayCompletion;
+        let dayCompletions = 0;
+
+        activeHabitIds.forEach((habitId) => {
+          totalPossibleCompletions++;
+          if (dayData.checks[habitId] === true) {
+            actualCompletions++;
+            dayCompletions++;
+          }
+        });
+
+        // Check if all habits were completed on this day
+        if (dayCompletions === activeHabitIds.length) {
+          perfectDays++;
+        }
+      } else {
+        // No data for this day, count as 0 completions
+        totalPossibleCompletions += activeHabitIds.length;
+      }
+    }
+
+    const completionRate =
+      totalPossibleCompletions > 0
+        ? Math.round((actualCompletions / totalPossibleCompletions) * 100)
+        : 0;
+
+    return { completionRate, perfectDays };
+  },
 };

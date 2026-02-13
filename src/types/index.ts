@@ -16,4 +16,7 @@ export interface HabitStats {
   streak: number;
   totalCompletions: number;
   completionRate: number;
+  completionRate7Days: number;
+  completionRate30Days: number;
+  perfectDays: number;
 }
