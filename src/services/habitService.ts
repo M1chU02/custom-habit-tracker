@@ -25,12 +25,20 @@ export const habitService = {
     });
   },
 
-  addHabit: async (userId: string, name: string, order: number) => {
+  addHabit: async (
+    userId: string,
+    name: string,
+    order: number,
+    description?: string,
+    reminderTime?: string,
+  ) => {
     const habitsRef = collection(db, "users", userId, "habits");
     const newHabitRef = doc(habitsRef);
     await setDoc(newHabitRef, {
       name,
       order,
+      description: description || null,
+      reminderTime: reminderTime || null,
       isArchived: false,
       createdAt: Date.now(),
     });

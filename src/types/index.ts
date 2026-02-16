@@ -4,6 +4,8 @@ export interface Habit {
   order: number;
   isArchived: boolean;
   createdAt: number;
+  description?: string;
+  reminderTime?: string; // HH:mm
 }
 
 export interface DayCompletion {

@@ -17,6 +17,9 @@ import {
   Award,
   BarChart3,
   GripVertical,
+  Bell,
+  Clock,
+  AlignLeft,
 } from "lucide-react";
 import { format } from "date-fns";
 import { pl } from "date-fns/locale";
@@ -39,6 +42,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Toaster, toast } from "sonner";
+import NotificationManager from "./NotificationManager";
 
 interface SortableHabitItemProps {
   habit: Habit;
@@ -139,16 +144,34 @@ const SortableHabitItem: React.FC<SortableHabitItemProps> = ({
             className="w-full bg-white/10 border border-primary/30 rounded-xl px-4 py-2 text-xl font-bold text-text-main focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         ) : (
-          <h4
-            onClick={onStartEdit}
-            className={clsx(
-              "text-xl font-bold transition-all duration-300 cursor-pointer hover:text-primary",
-              isCompleted
-                ? "text-text-muted line-through opacity-50"
-                : "text-text-main",
-            )}>
-            {habit.name}
-          </h4>
+          <>
+            <h4
+              onClick={onStartEdit}
+              className={clsx(
+                "text-xl font-bold transition-all duration-300 cursor-pointer hover:text-primary",
+                isCompleted
+                  ? "text-text-muted line-through opacity-50"
+                  : "text-text-main",
+              )}>
+              {habit.name}
+            </h4>
+            {(habit.description || habit.reminderTime) && (
+              <div className="flex items-center gap-3 mt-1 text-text-dim text-sm">
+                {habit.reminderTime && (
+                  <span className="flex items-center gap-1 text-accent font-medium bg-accent/10 px-2 py-0.5 rounded-md">
+                    <Bell size={12} />
+                    {habit.reminderTime}
+                  </span>
+                )}
+                {habit.description && (
+                  <span className="flex items-center gap-1 opacity-70 truncate max-w-[200px]">
+                    <AlignLeft size={12} />
+                    {habit.description}
+                  </span>
+                )}
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -181,6 +204,8 @@ const Dashboard: React.FC = () => {
   const [dayData, setDayData] = useState<DayCompletion | null>(null);
   const [isAddingHabit, setIsAddingHabit] = useState(false);
   const [newHabitName, setNewHabitName] = useState("");
+  const [newHabitDescription, setNewHabitDescription] = useState("");
+  const [newHabitTime, setNewHabitTime] = useState("");
   const [currentStreak, setCurrentStreak] = useState<number>(0);
   const [editingHabitId, setEditingHabitId] = useState<string | null>(null);
   const [editingHabitName, setEditingHabitName] = useState("");
@@ -247,11 +272,21 @@ const Dashboard: React.FC = () => {
     if (!user || !newHabitName.trim()) return;
 
     try {
-      await habitService.addHabit(user.uid, newHabitName.trim(), habits.length);
+      await habitService.addHabit(
+        user.uid,
+        newHabitName.trim(),
+        habits.length,
+        newHabitDescription.trim() || undefined,
+        newHabitTime || undefined,
+      );
       setNewHabitName("");
+      setNewHabitDescription("");
+      setNewHabitTime("");
       setIsAddingHabit(false);
+      toast.success("Nawyk dodany pomyślnie!");
     } catch (error) {
       console.error("Error adding habit", error);
+      toast.error("Wystąpił błąd podczas dodawania nawyku");
     }
   };
 
@@ -259,6 +294,11 @@ const Dashboard: React.FC = () => {
     if (!user) return;
     const isCompleted = dayData?.checks[habitId] || false;
     await habitService.toggleHabit(user.uid, today, habitId, !isCompleted);
+    if (!isCompleted) {
+      toast.success("Nawyk wykonany! Brawo!", {
+        icon: "👏",
+      });
+    }
   };
 
   const toggleArchive = async (habit: Habit) => {
@@ -266,12 +306,16 @@ const Dashboard: React.FC = () => {
     await habitService.updateHabit(user.uid, habit.id, {
       isArchived: !habit.isArchived,
     });
+    toast.info(
+      habit.isArchived ? "Nawyk przywrócony" : "Nawyk przeniesiony do archiwum",
+    );
   };
 
   const deleteHabit = async (habitId: string) => {
     if (!user || !window.confirm("Czy na pewno chcesz usunąć ten nawyk?"))
       return;
     await habitService.deleteHabit(user.uid, habitId);
+    toast.error("Nawyk usunięty");
   };
 
   const startEditingHabit = (habit: Habit) => {
@@ -326,6 +370,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
+      <Toaster position="top-center" richColors theme="dark" closeButton />
+      <NotificationManager habits={habits} dayData={dayData} />
       <div className="bg-mesh-premium" />
 
       <div className="max-w-4xl mx-auto px-6 py-12 md:py-20 relative z-10">
@@ -553,23 +599,60 @@ const Dashboard: React.FC = () => {
                 <Card className="glass-premium p-6 border-primary/30 bg-primary/5">
                   <form
                     onSubmit={handleAddHabit}
-                    className="flex flex-col md:flex-row gap-4">
-                    <input
-                      autoFocus
-                      type="text"
-                      value={newHabitName}
-                      onChange={(e) => setNewHabitName(e.target.value)}
-                      placeholder="Co chcesz śledzić?"
-                      className="flex-1"
-                    />
-                    <div className="flex gap-3">
-                      <Button type="submit" className="flex-1 md:flex-none">
-                        Dodaj
-                      </Button>
+                    className="flex flex-col gap-4">
+                    <div>
+                      <input
+                        autoFocus
+                        type="text"
+                        value={newHabitName}
+                        onChange={(e) => setNewHabitName(e.target.value)}
+                        placeholder="Co chcesz śledzić? (np. Bieganie 5km)"
+                        className="w-full text-lg font-bold bg-transparent border-0 border-b-2 border-white/10 focus:border-primary px-0 py-2 placeholder-white/20 focus:ring-0 transition-colors"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="relative">
+                        <AlignLeft
+                          className="absolute left-3 top-3 text-text-dim"
+                          size={18}
+                        />
+                        <input
+                          type="text"
+                          value={newHabitDescription}
+                          onChange={(e) =>
+                            setNewHabitDescription(e.target.value)
+                          }
+                          placeholder="Dodaj krótki opis lub motywację..."
+                          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-colors"
+                        />
+                      </div>
+                      <div className="relative">
+                        <Clock
+                          className="absolute left-3 top-3 text-text-dim"
+                          size={18}
+                        />
+                        <input
+                          type="time"
+                          value={newHabitTime}
+                          onChange={(e) => setNewHabitTime(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-3 mt-2 justify-end">
                       <Button
                         variant="ghost"
+                        type="button"
                         onClick={() => setIsAddingHabit(false)}>
                         Anuluj
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="px-8 shadow-primary-glow">
+                        <Plus size={18} />
+                        Dodaj nawyk
                       </Button>
                     </div>
                   </form>
