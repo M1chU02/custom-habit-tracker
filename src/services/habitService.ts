@@ -8,6 +8,9 @@ import {
   deleteDoc,
   orderBy,
   getDoc,
+  getDocs,
+  where,
+  documentId,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import type { Habit, DayCompletion } from "../types";
@@ -192,5 +195,45 @@ export const habitService = {
         : 0;
 
     return { completionRate, perfectDays };
+  },
+
+  getYearlyHistory: async (
+    userId: string,
+    activeHabitIds: string[],
+  ): Promise<Record<string, number>> => {
+    // Return a map of date -> count of completed habits
+    const history: Record<string, number> = {};
+    const today = new Date();
+    const oneYearAgo = new Date();
+    oneYearAgo.setDate(today.getDate() - 365);
+
+    // Efficiently, we might want to query by date range if we store date as a field,
+    // but our ID is the date.
+    // Querying a collection by ID range is possible in Firestore using
+    // where(documentId(), ">=", start) and where(documentId(), "<=", end).
+
+    const daysRef = collection(db, "users", userId, "days");
+    const startId = oneYearAgo.toISOString().split("T")[0];
+    const endId = today.toISOString().split("T")[0];
+
+    // Note: 'ordering by __name__' is implied when using range operators on documentId()
+    const q = query(
+      daysRef,
+      where(documentId(), ">=", startId),
+      where(documentId(), "<=", endId),
+    );
+
+    const snapshot = await getDocs(q);
+
+    snapshot.docs.forEach((doc) => {
+      const data = doc.data() as DayCompletion;
+      let count = 0;
+      activeHabitIds.forEach((id) => {
+        if (data.checks[id]) count++;
+      });
+      history[doc.id] = count;
+    });
+
+    return history;
   },
 };

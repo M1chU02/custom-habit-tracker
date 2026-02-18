@@ -44,6 +44,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Toaster, toast } from "sonner";
 import NotificationManager from "./NotificationManager";
+import ContributionGraph from "./ContributionGraph";
 
 interface SortableHabitItemProps {
   habit: Habit;
@@ -217,6 +218,9 @@ const Dashboard: React.FC = () => {
     completionRate: 0,
     perfectDays: 0,
   });
+  const [yearlyHistory, setYearlyHistory] = useState<Record<string, number>>(
+    {},
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -265,6 +269,11 @@ const Dashboard: React.FC = () => {
     habitService
       .getExtendedStats(user.uid, activeHabitIds, 30)
       .then(setStats30Days);
+
+    // Get yearly history
+    habitService
+      .getYearlyHistory(user.uid, activeHabitIds)
+      .then(setYearlyHistory);
   }, [user, habits, dayData]);
 
   const handleAddHabit = async (e: React.FormEvent) => {
@@ -502,6 +511,26 @@ const Dashboard: React.FC = () => {
             <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
               Zorganizuj swój dzień lepiej.
             </p>
+          </Card>
+        </section>
+
+        {/* Contribution Graph */}
+        <section className="mb-16">
+          <Card
+            glass
+            className="glass-premium p-8 border-primary/20 bg-primary/5">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-primary/20 rounded-xl text-primary shadow-inner shadow-white/10">
+                <Calendar size={20} />
+              </div>
+              <h3 className="text-xl font-black tracking-tight text-white">
+                Aktywność w ostatnim roku
+              </h3>
+            </div>
+            <ContributionGraph
+              data={yearlyHistory}
+              totalHabits={activeHabits.length}
+            />
           </Card>
         </section>
 
