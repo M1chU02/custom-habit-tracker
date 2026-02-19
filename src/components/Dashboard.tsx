@@ -4,6 +4,10 @@ import { habitService } from "../services/habitService";
 import type { Habit, DayCompletion } from "../types";
 import Button from "./Button";
 import Card from "./Card";
+import { format, addDays, subDays, isSameDay } from "date-fns";
+import { pl } from "date-fns/locale";
+import { motion, AnimatePresence } from "framer-motion";
+import { clsx } from "clsx";
 import {
   Plus,
   LogOut,
@@ -20,11 +24,10 @@ import {
   Bell,
   Clock,
   AlignLeft,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
 } from "lucide-react";
-import { format } from "date-fns";
-import { pl } from "date-fns/locale";
-import { motion, AnimatePresence } from "framer-motion";
-import { clsx } from "clsx";
 import {
   DndContext,
   closestCenter,
@@ -222,6 +225,8 @@ const Dashboard: React.FC = () => {
     {},
   );
 
+  const [selectedDate, setSelectedDate] = useState(new Date());
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -229,7 +234,16 @@ const Dashboard: React.FC = () => {
     }),
   );
 
-  const today = format(new Date(), "yyyy-MM-dd");
+  const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
+  const isTodaySelected = isSameDay(selectedDate, new Date());
+
+  const goToPreviousDay = () => setSelectedDate((prev) => subDays(prev, 1));
+  const goToNextDay = () => {
+    if (!isTodaySelected) {
+      setSelectedDate((prev) => addDays(prev, 1));
+    }
+  };
+  const goToToday = () => setSelectedDate(new Date());
 
   useEffect(() => {
     if (!user) return;
@@ -240,7 +254,7 @@ const Dashboard: React.FC = () => {
     );
     const unsubscribeDay = habitService.subscribeToDay(
       user.uid,
-      today,
+      formattedSelectedDate,
       setDayData,
     );
 
@@ -248,7 +262,7 @@ const Dashboard: React.FC = () => {
       unsubscribeHabits();
       unsubscribeDay();
     };
-  }, [user, today]);
+  }, [user, formattedSelectedDate]);
 
   // Calculate streak and extended stats when habits change
   useEffect(() => {
@@ -302,7 +316,12 @@ const Dashboard: React.FC = () => {
   const toggleHabit = async (habitId: string) => {
     if (!user) return;
     const isCompleted = dayData?.checks[habitId] || false;
-    await habitService.toggleHabit(user.uid, today, habitId, !isCompleted);
+    await habitService.toggleHabit(
+      user.uid,
+      formattedSelectedDate,
+      habitId,
+      !isCompleted,
+    );
     if (!isCompleted) {
       toast.success("Nawyk wykonany! Brawo!", {
         icon: "👏",
@@ -413,17 +432,68 @@ const Dashboard: React.FC = () => {
               </motion.h2>
               <p className="text-text-dim text-lg font-semibold flex items-center gap-2">
                 <Calendar size={18} className="text-primary" />
-                {format(new Date(), "EEEE, d MMMM", { locale: pl })}
+                {format(selectedDate, "EEEE, d MMMM", { locale: pl })}
+                {!isTodaySelected && (
+                  <span className="text-xs font-black uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-md ml-2 border border-primary/20">
+                    Tryb Historii
+                  </span>
+                )}
               </p>
             </div>
           </div>
-          <Button
-            variant="secondary"
-            onClick={logout}
-            className="self-start md:self-center border-white/10 shadow-xl">
-            <LogOut size={20} />
-            Wyloguj
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-white/5 p-1 rounded-2xl border border-white/10 shadow-xl overflow-hidden backdrop-blur-xl">
+              <motion.button
+                whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                whileTap={{ scale: 0.95 }}
+                onClick={goToPreviousDay}
+                className="p-3 text-text-dim hover:text-white transition-colors"
+                title="Poprzedni dzień">
+                <ChevronLeft size={24} />
+              </motion.button>
+
+              {!isTodaySelected && (
+                <motion.button
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: "auto", opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={goToToday}
+                  className="px-4 py-2 text-xs font-black uppercase tracking-wider text-primary border-l border-r border-white/5 flex items-center gap-2"
+                  title="Wróć do dziś">
+                  <RotateCcw size={14} />
+                  Dziś
+                </motion.button>
+              )}
+
+              <motion.button
+                whileHover={{
+                  backgroundColor: isTodaySelected
+                    ? "transparent"
+                    : "rgba(255,255,255,0.05)",
+                }}
+                whileTap={{ scale: isTodaySelected ? 1 : 0.95 }}
+                onClick={goToNextDay}
+                disabled={isTodaySelected}
+                className={clsx(
+                  "p-3 transition-colors",
+                  isTodaySelected
+                    ? "text-white/10 cursor-not-allowed"
+                    : "text-text-dim hover:text-white",
+                )}
+                title="Następny dzień">
+                <ChevronRight size={24} />
+              </motion.button>
+            </div>
+            <Button
+              variant="secondary"
+              onClick={logout}
+              className="self-start md:self-center border-white/10 shadow-xl">
+              <LogOut size={20} />
+              Wyloguj
+            </Button>
+          </div>
         </header>
 
         {/* Stats Overview */}
