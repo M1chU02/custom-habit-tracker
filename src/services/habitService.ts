@@ -111,9 +111,24 @@ export const habitService = {
     let streak = 0;
     const today = new Date();
 
-    // Check backwards from today
-    for (let i = 0; i < 365; i++) {
-      // Limit to 1 year
+    // Check if today is a perfect day
+    const todayString = today.toISOString().split("T")[0];
+    const todayRef = doc(db, "users", userId, "days", todayString);
+    const todayDoc = await getDoc(todayRef);
+    const todayComplete =
+      todayDoc.exists() &&
+      activeHabitIds.every(
+        (habitId) =>
+          (todayDoc.data() as DayCompletion).checks[habitId] === true,
+      );
+
+    // If today is complete, start counting from today (i=0).
+    // If today is not yet complete (day in progress), start counting from yesterday (i=1)
+    // so that a mid-day check doesn't break an ongoing streak.
+    const startOffset = todayComplete ? 0 : 1;
+
+    // Check backwards
+    for (let i = startOffset; i < 365; i++) {
       const checkDate = new Date(today);
       checkDate.setDate(today.getDate() - i);
       const dateString = checkDate.toISOString().split("T")[0];
@@ -199,24 +214,20 @@ export const habitService = {
 
   getYearlyHistory: async (
     userId: string,
-    activeHabitIds: string[],
+    _activeHabitIds: string[],
   ): Promise<Record<string, number>> => {
     // Return a map of date -> count of completed habits
+    // We count ALL checked habits stored for each day (not filtered by current active list),
+    // so historical days before a habit was added still show correct activity.
     const history: Record<string, number> = {};
     const today = new Date();
     const oneYearAgo = new Date();
     oneYearAgo.setDate(today.getDate() - 365);
 
-    // Efficiently, we might want to query by date range if we store date as a field,
-    // but our ID is the date.
-    // Querying a collection by ID range is possible in Firestore using
-    // where(documentId(), ">=", start) and where(documentId(), "<=", end).
-
     const daysRef = collection(db, "users", userId, "days");
     const startId = oneYearAgo.toISOString().split("T")[0];
     const endId = today.toISOString().split("T")[0];
 
-    // Note: 'ordering by __name__' is implied when using range operators on documentId()
     const q = query(
       daysRef,
       where(documentId(), ">=", startId),
@@ -227,11 +238,13 @@ export const habitService = {
 
     snapshot.docs.forEach((doc) => {
       const data = doc.data() as DayCompletion;
-      let count = 0;
-      activeHabitIds.forEach((id) => {
-        if (data.checks[id]) count++;
-      });
-      history[doc.id] = count;
+      // Count all habits that were checked true on this day
+      const count = Object.values(data.checks || {}).filter(
+        (v) => v === true,
+      ).length;
+      if (count > 0) {
+        history[doc.id] = count;
+      }
     });
 
     return history;
