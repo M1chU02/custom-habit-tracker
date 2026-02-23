@@ -4,198 +4,197 @@ import {
   subDays,
   eachDayOfInterval,
   startOfWeek,
-  getMonth,
+  getDay,
 } from "date-fns";
 import { pl } from "date-fns/locale";
-import { clsx } from "clsx";
 
 interface ContributionGraphProps {
-  data: Record<string, number>; // date "YYYY-MM-DD" -> count
+  data: Record<string, number>; // "YYYY-MM-DD" -> count
   totalHabits: number;
 }
+
+const DAY_LABELS = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+const CELL_SIZE = 11;
+const CELL_GAP = 2;
+const STEP = CELL_SIZE + CELL_GAP;
+const DAY_LABEL_WIDTH = 22;
 
 const ContributionGraph: React.FC<ContributionGraphProps> = ({
   data,
   totalHabits,
 }) => {
   const today = new Date();
-  // Generate last 365 days roughly, aligned to weeks
-  const endDate = today;
-  const startDate = subDays(today, 365);
 
-  // Align start date to the beginning of the week (Monday)
-  // 1 = Monday
-  const gridStartDate = startOfWeek(startDate, { weekStartsOn: 1 });
+  // Start from the beginning of the week 52 weeks ago, so we always get exactly 53 columns
+  const periodEnd = today;
+  const periodStart = startOfWeek(subDays(today, 364), { weekStartsOn: 1 }); // Monday-based
 
-  const dates = useMemo(() => {
-    return eachDayOfInterval({
-      start: gridStartDate,
-      end: endDate,
-    });
-  }, [gridStartDate, endDate]);
+  const allDays = useMemo(
+    () => eachDayOfInterval({ start: periodStart, end: periodEnd }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
 
-  // Group by weeks for columns
+  // Group days into weeks (columns), each week starts on Monday
   const weeks = useMemo(() => {
-    const weeksArray: Date[][] = [];
-    let currentWeek: Date[] = [];
-
-    dates.forEach((date) => {
-      currentWeek.push(date);
-      if (currentWeek.length === 7) {
-        weeksArray.push(currentWeek);
-        currentWeek = [];
+    const result: Date[][] = [];
+    let week: Date[] = [];
+    allDays.forEach((date) => {
+      // getDay: 0=Sun,1=Mon...6=Sat — convert to 0=Mon..6=Sun
+      const dow = (getDay(date) + 6) % 7; // Mon=0 … Sun=6
+      if (dow === 0 && week.length > 0) {
+        result.push(week);
+        week = [];
       }
+      week.push(date);
     });
+    if (week.length > 0) result.push(week);
+    return result;
+  }, [allDays]);
 
-    // Push last partial week if any
-    if (currentWeek.length > 0) {
-      weeksArray.push(currentWeek);
-    }
-
-    return weeksArray;
-  }, [dates]);
-
-  const getIntensity = (count: number) => {
-    if (count === 0) return 0;
-    if (totalHabits === 0) return 0;
-
-    const percentage = count / totalHabits;
-
-    if (percentage <= 0.25) return 1;
-    if (percentage <= 0.5) return 2;
-    if (percentage <= 0.75) return 3;
-    return 4;
-  };
-
-  const getIntensityClass = (level: number) => {
-    switch (level) {
-      case 0:
-        return "bg-white/[0.03] border-white/5";
-      case 1:
-        return "bg-primary/20 border-primary/30";
-      case 2:
-        return "bg-primary/40 border-primary/50";
-      case 3:
-        return "bg-primary/70 border-primary/80";
-      case 4:
-        return "bg-primary border-primary shadow-[0_0_10px_rgba(139,92,246,0.5)]";
-      default:
-        return "bg-white/[0.03]";
-    }
-  };
-
-  // Month labels logic
+  // Month labels: find first week where the 1st of a new month appears
   const monthLabels = useMemo(() => {
-    const labels: { text: string; weekIndex: number }[] = [];
+    const labels: { text: string; colIndex: number }[] = [];
     let lastMonth = -1;
-
-    weeks.forEach((week, index) => {
-      const firstDayOfWeek = week[0];
-      const month = getMonth(firstDayOfWeek);
-
-      // Show label if month changes or it's the first week (and reasonable space)
-      if (month !== lastMonth) {
-        // Should verify if the first week of the month actually has enough days in this month to label it here
-        // Github logic is a bit complex, but simple "first week of month" usually works
-        labels.push({
-          text: format(firstDayOfWeek, "MMM", { locale: pl }),
-          weekIndex: index,
-        });
-        lastMonth = month;
-      }
+    weeks.forEach((week, colIndex) => {
+      week.forEach((date) => {
+        const m = date.getMonth();
+        if (m !== lastMonth) {
+          labels.push({
+            text: format(date, "MMM", { locale: pl }),
+            colIndex,
+          });
+          lastMonth = m;
+        }
+      });
     });
     return labels;
   }, [weeks]);
 
+  const getIntensity = (count: number): 0 | 1 | 2 | 3 | 4 => {
+    if (!count || count === 0) return 0;
+    if (totalHabits === 0) return 1;
+    const pct = count / totalHabits;
+    if (pct <= 0.25) return 1;
+    if (pct <= 0.5) return 2;
+    if (pct <= 0.75) return 3;
+    return 4;
+  };
+
+  const intensityColor: Record<0 | 1 | 2 | 3 | 4, string> = {
+    0: "rgba(255,255,255,0.04)",
+    1: "rgba(139,92,246,0.25)",
+    2: "rgba(139,92,246,0.45)",
+    3: "rgba(139,92,246,0.70)",
+    4: "rgba(139,92,246,1)",
+  };
+
+  const totalWidth = DAY_LABEL_WIDTH + weeks.length * STEP;
+  const headerHeight = 20;
+  const gridHeight = 7 * STEP;
+  const svgHeight = headerHeight + gridHeight;
+
   return (
-    <div className="w-full overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-      <div className="min-w-fit pr-4">
+    <div className="w-full overflow-x-auto pb-2">
+      <svg
+        width={totalWidth}
+        height={svgHeight + 30}
+        style={{ display: "block", overflow: "visible" }}>
         {/* Month labels */}
-        <div className="flex text-[10px] text-text-dim mb-2 h-4 relative">
-          {monthLabels.map((label, i) => (
-            <div
-              key={i}
-              className="absolute"
-              style={{ left: `${label.weekIndex * 14}px` }} // 10px box + 4px gap approx
-            >
-              {label.text}
-            </div>
-          ))}
-        </div>
+        {monthLabels.map((label, i) => (
+          <text
+            key={i}
+            x={DAY_LABEL_WIDTH + label.colIndex * STEP}
+            y={12}
+            fontSize={10}
+            fill="rgba(255,255,255,0.35)"
+            fontFamily="inherit">
+            {label.text}
+          </text>
+        ))}
 
-        <div className="flex gap-1">
-          {/* Day labels (Mon, Wed, Fri) */}
-          <div className="flex flex-col gap-1 text-[10px] text-text-dim mr-2 pt-[14px]">
-            <div className="h-[10px]">Pn</div>
-            <div className="h-[10px]"></div>
-            <div className="h-[10px]">Śr</div>
-            <div className="h-[10px]"></div>
-            <div className="h-[10px]">Pt</div>
-            <div className="h-[10px]"></div>
-            <div className="h-[10px]"></div>
-          </div>
+        {/* Day-of-week labels */}
+        {DAY_LABELS.map((label, row) => (
+          <text
+            key={row}
+            x={0}
+            y={headerHeight + row * STEP + CELL_SIZE - 1}
+            fontSize={9}
+            fill="rgba(255,255,255,0.30)"
+            fontFamily="inherit">
+            {/* show only Mon, Wed, Fri */}
+            {row % 2 === 0 ? label : ""}
+          </text>
+        ))}
 
-          {/* Grid */}
-          <div className="flex gap-1">
-            {weeks.map((week, weekIndex) => (
-              <div key={weekIndex} className="flex flex-col gap-1">
-                {week.map((date: Date) => {
-                  const dateStr = format(date, "yyyy-MM-dd");
-                  const count = data[dateStr] || 0;
-                  const intensity = getIntensity(count);
+        {/* Grid cells */}
+        {weeks.map((week, colIndex) =>
+          week.map((date) => {
+            const dow = (getDay(date) + 6) % 7; // Mon=0
+            const dateStr = format(date, "yyyy-MM-dd");
+            const count = data[dateStr] ?? 0;
+            const intensity = getIntensity(count);
+            const x = DAY_LABEL_WIDTH + colIndex * STEP;
+            const y = headerHeight + dow * STEP;
+            const isToday = dateStr === format(today, "yyyy-MM-dd");
 
-                  return (
-                    <div
-                      key={dateStr}
-                      className={clsx(
-                        "w-[10px] h-[10px] rounded-sm border transition-colors duration-200",
-                        getIntensityClass(intensity),
-                      )}
-                      title={`${format(date, "d MMMM yyyy", { locale: pl })}: ${count} ukończonych nawyków`}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </div>
+            return (
+              <g key={dateStr}>
+                <rect
+                  x={x}
+                  y={y}
+                  width={CELL_SIZE}
+                  height={CELL_SIZE}
+                  rx={2}
+                  ry={2}
+                  fill={intensityColor[intensity]}
+                  stroke={
+                    isToday ? "rgba(139,92,246,0.9)" : "rgba(255,255,255,0.04)"
+                  }
+                  strokeWidth={isToday ? 1.5 : 0.5}>
+                  <title>
+                    {format(date, "d MMMM yyyy", { locale: pl })}: {count}{" "}
+                    ukończonych nawyków
+                  </title>
+                </rect>
+              </g>
+            );
+          }),
+        )}
 
         {/* Legend */}
-        <div className="flex items-center gap-2 mt-4 text-[10px] text-text-dim justify-end">
-          <span>Mniej</span>
-          <div
-            className={clsx(
-              "w-[10px] h-[10px] rounded-sm border",
-              getIntensityClass(0),
-            )}
-          />
-          <div
-            className={clsx(
-              "w-[10px] h-[10px] rounded-sm border",
-              getIntensityClass(1),
-            )}
-          />
-          <div
-            className={clsx(
-              "w-[10px] h-[10px] rounded-sm border",
-              getIntensityClass(2),
-            )}
-          />
-          <div
-            className={clsx(
-              "w-[10px] h-[10px] rounded-sm border",
-              getIntensityClass(3),
-            )}
-          />
-          <div
-            className={clsx(
-              "w-[10px] h-[10px] rounded-sm border",
-              getIntensityClass(4),
-            )}
-          />
-          <span>Więcej</span>
-        </div>
-      </div>
+        <g transform={`translate(${totalWidth - 110}, ${svgHeight + 16})`}>
+          <text
+            x={0}
+            y={9}
+            fontSize={9}
+            fill="rgba(255,255,255,0.35)"
+            fontFamily="inherit">
+            Mniej
+          </text>
+          {([0, 1, 2, 3, 4] as const).map((lvl, i) => (
+            <rect
+              key={lvl}
+              x={32 + i * (CELL_SIZE + 2)}
+              y={0}
+              width={CELL_SIZE}
+              height={CELL_SIZE}
+              rx={2}
+              fill={intensityColor[lvl]}
+              stroke="rgba(255,255,255,0.04)"
+              strokeWidth={0.5}
+            />
+          ))}
+          <text
+            x={103}
+            y={9}
+            fontSize={9}
+            fill="rgba(255,255,255,0.35)"
+            fontFamily="inherit">
+            Więcej
+          </text>
+        </g>
+      </svg>
     </div>
   );
 };
