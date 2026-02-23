@@ -8,9 +8,6 @@ import {
   deleteDoc,
   orderBy,
   getDoc,
-  getDocs,
-  where,
-  documentId,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import type { Habit, DayCompletion } from "../types";
@@ -216,37 +213,35 @@ export const habitService = {
     userId: string,
     _activeHabitIds: string[],
   ): Promise<Record<string, number>> => {
-    // Return a map of date -> count of completed habits
-    // We count ALL checked habits stored for each day (not filtered by current active list),
-    // so historical days before a habit was added still show correct activity.
+    // Fetch each day individually (same pattern as calculateStreak),
+    // avoiding the need for a Firestore composite index on the collection query.
     const history: Record<string, number> = {};
     const today = new Date();
-    const oneYearAgo = new Date();
-    oneYearAgo.setDate(today.getDate() - 365);
 
-    const daysRef = collection(db, "users", userId, "days");
-    const startId = oneYearAgo.toISOString().split("T")[0];
-    const endId = today.toISOString().split("T")[0];
+    const promises: Promise<void>[] = [];
 
-    const q = query(
-      daysRef,
-      where(documentId(), ">=", startId),
-      where(documentId(), "<=", endId),
-    );
+    for (let i = 0; i <= 365; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      const dateString = checkDate.toISOString().split("T")[0];
 
-    const snapshot = await getDocs(q);
+      const dayRef = doc(db, "users", userId, "days", dateString);
+      promises.push(
+        getDoc(dayRef).then((dayDoc) => {
+          if (dayDoc.exists()) {
+            const data = dayDoc.data() as DayCompletion;
+            const count = Object.values(data.checks || {}).filter(
+              (v) => v === true,
+            ).length;
+            if (count > 0) {
+              history[dateString] = count;
+            }
+          }
+        }),
+      );
+    }
 
-    snapshot.docs.forEach((doc) => {
-      const data = doc.data() as DayCompletion;
-      // Count all habits that were checked true on this day
-      const count = Object.values(data.checks || {}).filter(
-        (v) => v === true,
-      ).length;
-      if (count > 0) {
-        history[doc.id] = count;
-      }
-    });
-
+    await Promise.all(promises);
     return history;
   },
 };
