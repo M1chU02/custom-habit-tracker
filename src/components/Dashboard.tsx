@@ -402,13 +402,13 @@ const Dashboard: React.FC = () => {
       <NotificationManager habits={habits} dayData={dayData} />
       <div className="bg-mesh-premium" />
 
-      <div className="max-w-4xl mx-auto px-6 py-12 md:py-20 relative z-10">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
-          <div className="flex items-center gap-6">
+      <div className="max-w-[1400px] mx-auto px-6 py-10 relative z-10">
+        {/* Header — full width */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div className="flex items-center gap-5">
             <motion.div
               whileHover={{ scale: 1.1, rotate: 5 }}
-              className="w-20 h-20 rounded-3xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 flex-shrink-0 bg-primary/10 flex items-center justify-center text-primary font-black text-3xl">
+              className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-primary/30 shadow-2xl shadow-primary/20 flex-shrink-0 bg-primary/10 flex items-center justify-center text-primary font-black text-2xl">
               {user?.photoURL ? (
                 <img
                   src={user.photoURL}
@@ -423,15 +423,15 @@ const Dashboard: React.FC = () => {
               <motion.h2
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-4xl font-black tracking-tight mb-1">
+                className="text-3xl font-black tracking-tight mb-0.5">
                 Cześć,{" "}
                 <span className="text-gradient-vibrant">
                   {user?.displayName?.split(" ")[0]}
                 </span>
                 !
               </motion.h2>
-              <p className="text-text-dim text-lg font-semibold flex items-center gap-2">
-                <Calendar size={18} className="text-primary" />
+              <p className="text-text-dim text-base font-semibold flex items-center gap-2">
+                <Calendar size={16} className="text-primary" />
                 {format(selectedDate, "EEEE, d MMMM", { locale: pl })}
                 {!isTodaySelected && (
                   <span className="text-xs font-black uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-md ml-2 border border-primary/20">
@@ -447,9 +447,9 @@ const Dashboard: React.FC = () => {
                 whileHover={{ backgroundColor: "rgba(255,255,255,0.05)" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={goToPreviousDay}
-                className="p-3 text-text-dim hover:text-white transition-colors"
+                className="p-2.5 text-text-dim hover:text-white transition-colors"
                 title="Poprzedni dzień">
-                <ChevronLeft size={24} />
+                <ChevronLeft size={22} />
               </motion.button>
 
               {!isTodaySelected && (
@@ -477,375 +477,363 @@ const Dashboard: React.FC = () => {
                 onClick={goToNextDay}
                 disabled={isTodaySelected}
                 className={clsx(
-                  "p-3 transition-colors",
+                  "p-2.5 transition-colors",
                   isTodaySelected
                     ? "text-white/10 cursor-not-allowed"
                     : "text-text-dim hover:text-white",
                 )}
                 title="Następny dzień">
-                <ChevronRight size={24} />
+                <ChevronRight size={22} />
               </motion.button>
             </div>
             <Button
               variant="secondary"
               onClick={logout}
-              className="self-start md:self-center border-white/10 shadow-xl">
-              <LogOut size={20} />
+              className="border-white/10 shadow-xl">
+              <LogOut size={18} />
               Wyloguj
             </Button>
           </div>
         </header>
 
-        {/* Stats Overview */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <Card
-            glass
-            className="glass-premium card-hover flex flex-col justify-between p-8 border-primary/20 bg-primary/5">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
-                Postęp dnia
-              </span>
-              <div className="p-3 bg-primary/20 rounded-2xl text-primary shadow-inner shadow-white/10">
-                <CheckCircle2 size={22} />
+        {/* Main horizontal grid: left = habits, right = stats */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8 items-start">
+          {/* LEFT COLUMN — Habits */}
+          <div className="space-y-6">
+            {/* Habits List */}
+            <section>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-black tracking-tight text-gradient">
+                  Twoje Nawyki
+                </h3>
+                <Button
+                  variant="primary"
+                  onClick={() => setIsAddingHabit(true)}
+                  className="rounded-2xl shadow-primary-glow">
+                  <Plus size={18} />
+                  Nowy nawyk
+                </Button>
               </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="text-5xl font-black font-heading text-gradient">
-                {progressPercent}%
-              </span>
-              <span className="text-text-dim text-sm font-bold bg-white/5 px-3 py-1 rounded-lg">
-                {completedCount}/{activeHabits.length}
-              </span>
-            </div>
-            <div className="mt-8 h-3 bg-white/5 rounded-full overflow-hidden border border-white/5 p-[2px]">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_20px_var(--primary-glow)]"
-              />
-            </div>
-          </Card>
 
-          <Card
-            glass
-            className="glass-premium card-hover flex flex-col justify-between p-8 border-secondary/20 bg-secondary/5">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
-                Streak
-              </span>
-              <div className="p-3 bg-secondary/20 rounded-2xl text-secondary shadow-inner shadow-white/10">
-                <TrendingUp size={22} />
-              </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <div className="flex flex-col">
-                <span className="text-5xl font-black font-heading text-gradient-vibrant">
-                  {currentStreak} {currentStreak === 1 ? "dzień" : "dni"}
-                </span>
-              </div>
-              {currentStreak >= 7 && (
-                <span className="text-white text-[10px] bg-secondary px-3 py-1 rounded-full font-black uppercase tracking-wider shadow-lg shadow-secondary/30">
-                  Rekord!
-                </span>
-              )}
-            </div>
-            <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
-              {currentStreak === 0
-                ? "Zacznij budować swój streak!"
-                : currentStreak < 7
-                  ? `Prawie tam! Jeszcze ${7 - currentStreak} ${7 - currentStreak === 1 ? "dzień" : "dni"} do odznaki.`
-                  : "Świetna robota! Kontynuuj!"}
-            </p>
-          </Card>
-
-          <Card
-            glass
-            className="glass-premium card-hover flex flex-col justify-between p-8 border-accent/20 bg-accent/5">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
-                Aktywne
-              </span>
-              <div className="p-3 bg-accent/20 rounded-2xl text-accent shadow-inner shadow-white/10">
-                <Calendar size={22} />
-              </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="text-5xl font-black font-heading text-gradient">
-                {activeHabits.length}
-              </span>
-              <span className="text-text-dim text-sm font-bold italic opacity-60">
-                nawyki
-              </span>
-            </div>
-            <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
-              Zorganizuj swój dzień lepiej.
-            </p>
-          </Card>
-        </section>
-
-        {/* Contribution Graph */}
-        <section className="mb-16">
-          <Card
-            glass
-            className="glass-premium p-8 border-primary/20 bg-primary/5">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2 bg-primary/20 rounded-xl text-primary shadow-inner shadow-white/10">
-                <Calendar size={20} />
-              </div>
-              <h3 className="text-xl font-black tracking-tight text-white">
-                Aktywność w ostatnim roku
-              </h3>
-            </div>
-            <ContributionGraph
-              data={yearlyHistory}
-              totalHabits={activeHabits.length}
-            />
-          </Card>
-        </section>
-
-        {/* Extended Statistics */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          <Card
-            glass
-            className="glass-premium card-hover flex flex-col justify-between p-8 border-success/20 bg-success/5">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
-                7 dni
-              </span>
-              <div className="p-3 bg-success/20 rounded-2xl text-success shadow-inner shadow-white/10">
-                <BarChart3 size={22} />
-              </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="text-5xl font-black font-heading text-gradient">
-                {stats7Days.completionRate}%
-              </span>
-            </div>
-            <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
-              Procent wykonania za ostatni tydzień
-            </p>
-          </Card>
-
-          <Card
-            glass
-            className="glass-premium card-hover flex flex-col justify-between p-8 border-accent/20 bg-accent/5">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
-                30 dni
-              </span>
-              <div className="p-3 bg-accent/20 rounded-2xl text-accent shadow-inner shadow-white/10">
-                <BarChart3 size={22} />
-              </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="text-5xl font-black font-heading text-gradient">
-                {stats30Days.completionRate}%
-              </span>
-            </div>
-            <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
-              Procent wykonania za ostatni miesiąc
-            </p>
-          </Card>
-
-          <Card
-            glass
-            className="glass-premium card-hover flex flex-col justify-between p-8 border-warning/20 bg-warning/5">
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
-                Perfekcyjne
-              </span>
-              <div className="p-3 bg-warning/20 rounded-2xl text-warning shadow-inner shadow-white/10">
-                <Award size={22} />
-              </div>
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="text-5xl font-black font-heading text-gradient-vibrant">
-                {stats30Days.perfectDays}
-              </span>
-              <span className="text-text-dim text-sm font-bold italic opacity-60">
-                dni
-              </span>
-            </div>
-            <p className="mt-8 text-text-dim text-sm font-semibold leading-snug">
-              Liczba perfekcyjnych dni (30 dni)
-            </p>
-          </Card>
-        </section>
-
-        {/* Habits List */}
-        <section className="mb-20">
-          <div className="flex items-center justify-between mb-10">
-            <h3 className="text-3xl font-black tracking-tight text-gradient">
-              Twoje Nawyki
-            </h3>
-            <Button
-              variant="primary"
-              onClick={() => setIsAddingHabit(true)}
-              className="rounded-2xl shadow-primary-glow">
-              <Plus size={20} />
-              Nowy nawyk
-            </Button>
-          </div>
-
-          <AnimatePresence mode="wait">
-            {isAddingHabit && (
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="mb-8">
-                <Card className="glass-premium p-6 border-primary/30 bg-primary/5">
-                  <form
-                    onSubmit={handleAddHabit}
-                    className="flex flex-col gap-4">
-                    <div>
-                      <input
-                        autoFocus
-                        type="text"
-                        value={newHabitName}
-                        onChange={(e) => setNewHabitName(e.target.value)}
-                        placeholder="Co chcesz śledzić? (np. Bieganie 5km)"
-                        className="w-full text-lg font-bold bg-transparent border-0 border-b-2 border-white/10 focus:border-primary px-0 py-2 placeholder-white/20 focus:ring-0 transition-colors"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="relative">
-                        <AlignLeft
-                          className="absolute left-3 top-3 text-text-dim"
-                          size={18}
-                        />
-                        <input
-                          type="text"
-                          value={newHabitDescription}
-                          onChange={(e) =>
-                            setNewHabitDescription(e.target.value)
-                          }
-                          placeholder="Dodaj krótki opis lub motywację..."
-                          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-colors"
-                        />
-                      </div>
-                      <div className="relative">
-                        <Clock
-                          className="absolute left-3 top-3 text-text-dim"
-                          size={18}
-                        />
-                        <input
-                          type="time"
-                          value={newHabitTime}
-                          onChange={(e) => setNewHabitTime(e.target.value)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-2 justify-end">
-                      <Button
-                        variant="ghost"
-                        type="button"
-                        onClick={() => setIsAddingHabit(false)}>
-                        Anuluj
-                      </Button>
-                      <Button
-                        type="submit"
-                        className="px-8 shadow-primary-glow">
-                        <Plus size={18} />
-                        Dodaj nawyk
-                      </Button>
-                    </div>
-                  </form>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}>
-            <SortableContext
-              items={activeHabits.map((h) => h.id)}
-              strategy={verticalListSortingStrategy}>
-              <motion.div layout className="space-y-4">
-                {activeHabits.length === 0 && !isAddingHabit && (
+              <AnimatePresence mode="wait">
+                {isAddingHabit && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-24 glass-premium rounded-[3rem] border-dashed border-white/10">
-                    <div className="w-24 h-24 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 border border-white/10 shadow-2xl animate-float">
-                      <Target className="text-primary" size={48} />
-                    </div>
-                    <h4 className="text-2xl font-black mb-3">
-                      Zacznij swoją podróż
-                    </h4>
-                    <p className="text-text-dim mb-10 max-w-xs mx-auto font-medium">
-                      Nie masz jeszcze żadnych aktywnych nawyków. Pora to
-                      zmienić!
-                    </p>
-                    <Button
-                      variant="primary"
-                      onClick={() => setIsAddingHabit(true)}
-                      className="rounded-2xl px-12 shadow-primary-glow">
-                      Stwórz pierwszy nawyk
-                    </Button>
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="mb-6">
+                    <Card className="glass-premium p-6 border-primary/30 bg-primary/5">
+                      <form
+                        onSubmit={handleAddHabit}
+                        className="flex flex-col gap-4">
+                        <div>
+                          <input
+                            autoFocus
+                            type="text"
+                            value={newHabitName}
+                            onChange={(e) => setNewHabitName(e.target.value)}
+                            placeholder="Co chcesz śledzić? (np. Bieganie 5km)"
+                            className="w-full text-lg font-bold bg-transparent border-0 border-b-2 border-white/10 focus:border-primary px-0 py-2 placeholder-white/20 focus:ring-0 transition-colors"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="relative">
+                            <AlignLeft
+                              className="absolute left-3 top-3 text-text-dim"
+                              size={18}
+                            />
+                            <input
+                              type="text"
+                              value={newHabitDescription}
+                              onChange={(e) =>
+                                setNewHabitDescription(e.target.value)
+                              }
+                              placeholder="Dodaj krótki opis lub motywację..."
+                              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-colors"
+                            />
+                          </div>
+                          <div className="relative">
+                            <Clock
+                              className="absolute left-3 top-3 text-text-dim"
+                              size={18}
+                            />
+                            <input
+                              type="time"
+                              value={newHabitTime}
+                              onChange={(e) => setNewHabitTime(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-text-main focus:outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-2 justify-end">
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            onClick={() => setIsAddingHabit(false)}>
+                            Anuluj
+                          </Button>
+                          <Button
+                            type="submit"
+                            className="px-8 shadow-primary-glow">
+                            <Plus size={18} />
+                            Dodaj nawyk
+                          </Button>
+                        </div>
+                      </form>
+                    </Card>
                   </motion.div>
                 )}
+              </AnimatePresence>
 
-                <AnimatePresence>
-                  {activeHabits.map((habit) => {
-                    const isCompleted = dayData?.checks[habit.id] || false;
-                    const isEditing = editingHabitId === habit.id;
-                    return (
-                      <SortableHabitItem
-                        key={habit.id}
-                        habit={habit}
-                        isCompleted={isCompleted}
-                        isEditing={isEditing}
-                        editingName={editingHabitName}
-                        onToggle={() => toggleHabit(habit.id)}
-                        onStartEdit={() => startEditingHabit(habit)}
-                        onSaveEdit={saveEditingHabit}
-                        onCancelEdit={cancelEditingHabit}
-                        onEditNameChange={setEditingHabitName}
-                        onArchive={() => toggleArchive(habit)}
-                        onDelete={() => deleteHabit(habit.id)}
-                      />
-                    );
-                  })}
-                </AnimatePresence>
-              </motion.div>
-            </SortableContext>
-          </DndContext>
-        </section>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}>
+                <SortableContext
+                  items={activeHabits.map((h) => h.id)}
+                  strategy={verticalListSortingStrategy}>
+                  <motion.div layout className="space-y-3">
+                    {activeHabits.length === 0 && !isAddingHabit && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-center py-20 glass-premium rounded-[3rem] border-dashed border-white/10">
+                        <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-[2.5rem] flex items-center justify-center mx-auto mb-6 border border-white/10 shadow-2xl animate-float">
+                          <Target className="text-primary" size={40} />
+                        </div>
+                        <h4 className="text-xl font-black mb-2">
+                          Zacznij swoją podróż
+                        </h4>
+                        <p className="text-text-dim mb-8 max-w-xs mx-auto font-medium text-sm">
+                          Nie masz jeszcze żadnych aktywnych nawyków. Pora to
+                          zmienić!
+                        </p>
+                        <Button
+                          variant="primary"
+                          onClick={() => setIsAddingHabit(true)}
+                          className="rounded-2xl px-10 shadow-primary-glow">
+                          Stwórz pierwszy nawyk
+                        </Button>
+                      </motion.div>
+                    )}
 
-        {/* Archives Section */}
-        {archivedHabits.length > 0 && (
-          <section className="mb-20">
-            <h3 className="text-xl font-black mb-6 text-text-dim uppercase tracking-widest px-2">
-              Zarchiwizowane
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {archivedHabits.map((habit) => (
+                    <AnimatePresence>
+                      {activeHabits.map((habit) => {
+                        const isCompleted = dayData?.checks[habit.id] || false;
+                        const isEditing = editingHabitId === habit.id;
+                        return (
+                          <SortableHabitItem
+                            key={habit.id}
+                            habit={habit}
+                            isCompleted={isCompleted}
+                            isEditing={isEditing}
+                            editingName={editingHabitName}
+                            onToggle={() => toggleHabit(habit.id)}
+                            onStartEdit={() => startEditingHabit(habit)}
+                            onSaveEdit={saveEditingHabit}
+                            onCancelEdit={cancelEditingHabit}
+                            onEditNameChange={setEditingHabitName}
+                            onArchive={() => toggleArchive(habit)}
+                            onDelete={() => deleteHabit(habit.id)}
+                          />
+                        );
+                      })}
+                    </AnimatePresence>
+                  </motion.div>
+                </SortableContext>
+              </DndContext>
+            </section>
+
+            {/* Archives (left column, below habits) */}
+            {archivedHabits.length > 0 && (
+              <section>
+                <h3 className="text-base font-black mb-4 text-text-dim uppercase tracking-widest px-2">
+                  Zarchiwizowane
+                </h3>
+                <div className="grid grid-cols-1 gap-3">
+                  {archivedHabits.map((habit) => (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      key={habit.id}
+                      className="group flex items-center justify-between p-4 px-6 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all">
+                      <span className="text-text-dim font-bold">
+                        {habit.name}
+                      </span>
+                      <motion.button
+                        whileHover={{ scale: 1.05, y: -1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleArchive(habit)}
+                        className="text-xs font-black text-primary opacity-0 group-hover:opacity-100 transition-all bg-primary/10 px-5 py-2.5 rounded-xl border border-primary/20 hover:bg-primary hover:text-white shadow-lg shadow-primary/20">
+                        Przywróć
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          {/* RIGHT COLUMN — Stats & Graph */}
+          <div className="space-y-5 xl:sticky xl:top-8">
+            {/* Day Progress */}
+            <Card
+              glass
+              className="glass-premium card-hover flex flex-col justify-between p-6 border-primary/20 bg-primary/5">
+              <div className="flex items-center justify-between mb-5">
+                <span className="text-text-muted text-xs font-black uppercase tracking-[0.2em]">
+                  Postęp dnia
+                </span>
+                <div className="p-2.5 bg-primary/20 rounded-xl text-primary shadow-inner shadow-white/10">
+                  <CheckCircle2 size={20} />
+                </div>
+              </div>
+              <div className="flex items-end justify-between">
+                <span className="text-4xl font-black font-heading text-gradient">
+                  {progressPercent}%
+                </span>
+                <span className="text-text-dim text-sm font-bold bg-white/5 px-3 py-1 rounded-lg">
+                  {completedCount}/{activeHabits.length}
+                </span>
+              </div>
+              <div className="mt-5 h-2.5 bg-white/5 rounded-full overflow-hidden border border-white/5 p-[2px]">
                 <motion.div
-                  layout
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  key={habit.id}
-                  className="group flex items-center justify-between p-4 px-6 rounded-2xl border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all">
-                  <span className="text-text-dim font-bold">{habit.name}</span>
-                  <motion.button
-                    whileHover={{ scale: 1.05, y: -1 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => toggleArchive(habit)}
-                    className="text-xs font-black text-primary opacity-0 group-hover:opacity-100 transition-all bg-primary/10 px-5 py-2.5 rounded-xl border border-primary/20 hover:bg-primary hover:text-white shadow-lg shadow-primary/20">
-                    Przywróć
-                  </motion.button>
-                </motion.div>
-              ))}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_20px_var(--primary-glow)]"
+                />
+              </div>
+            </Card>
+
+            {/* Streak + Active row */}
+            <div className="grid grid-cols-2 gap-4">
+              <Card
+                glass
+                className="glass-premium card-hover flex flex-col justify-between p-5 border-secondary/20 bg-secondary/5">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-text-muted text-xs font-black uppercase tracking-[0.15em]">
+                    Streak
+                  </span>
+                  <div className="p-2 bg-secondary/20 rounded-xl text-secondary">
+                    <TrendingUp size={18} />
+                  </div>
+                </div>
+                <span className="text-3xl font-black font-heading text-gradient-vibrant">
+                  {currentStreak}
+                </span>
+                <p className="mt-3 text-text-dim text-xs font-semibold leading-snug">
+                  {currentStreak === 1 ? "dzień" : "dni"}{" "}
+                  {currentStreak >= 7 && (
+                    <span className="text-secondary font-black">
+                      🔥 Rekord!
+                    </span>
+                  )}
+                </p>
+              </Card>
+
+              <Card
+                glass
+                className="glass-premium card-hover flex flex-col justify-between p-5 border-accent/20 bg-accent/5">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-text-muted text-xs font-black uppercase tracking-[0.15em]">
+                    Aktywne
+                  </span>
+                  <div className="p-2 bg-accent/20 rounded-xl text-accent">
+                    <Calendar size={18} />
+                  </div>
+                </div>
+                <span className="text-3xl font-black font-heading text-gradient">
+                  {activeHabits.length}
+                </span>
+                <p className="mt-3 text-text-dim text-xs font-semibold">
+                  nawyki
+                </p>
+              </Card>
             </div>
-          </section>
-        )}
+
+            {/* Contribution Graph */}
+            <Card
+              glass
+              className="glass-premium p-5 border-primary/20 bg-primary/5 overflow-hidden">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="p-2 bg-primary/20 rounded-xl text-primary">
+                  <Calendar size={18} />
+                </div>
+                <h3 className="text-base font-black tracking-tight text-white">
+                  Aktywność w ostatnim roku
+                </h3>
+              </div>
+              <ContributionGraph
+                data={yearlyHistory}
+                totalHabits={activeHabits.length}
+              />
+            </Card>
+
+            {/* Extended stats row */}
+            <div className="grid grid-cols-3 gap-3">
+              <Card
+                glass
+                className="glass-premium card-hover flex flex-col p-4 border-success/20 bg-success/5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-text-muted text-[10px] font-black uppercase tracking-wider">
+                    7 dni
+                  </span>
+                  <div className="p-1.5 bg-success/20 rounded-lg text-success">
+                    <BarChart3 size={14} />
+                  </div>
+                </div>
+                <span className="text-2xl font-black font-heading text-gradient">
+                  {stats7Days.completionRate}%
+                </span>
+                <p className="mt-2 text-text-dim text-[10px] font-semibold leading-tight opacity-70">
+                  Tydzień
+                </p>
+              </Card>
+
+              <Card
+                glass
+                className="glass-premium card-hover flex flex-col p-4 border-accent/20 bg-accent/5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-text-muted text-[10px] font-black uppercase tracking-wider">
+                    30 dni
+                  </span>
+                  <div className="p-1.5 bg-accent/20 rounded-lg text-accent">
+                    <BarChart3 size={14} />
+                  </div>
+                </div>
+                <span className="text-2xl font-black font-heading text-gradient">
+                  {stats30Days.completionRate}%
+                </span>
+                <p className="mt-2 text-text-dim text-[10px] font-semibold leading-tight opacity-70">
+                  Miesiąc
+                </p>
+              </Card>
+
+              <Card
+                glass
+                className="glass-premium card-hover flex flex-col p-4 border-warning/20 bg-warning/5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-text-muted text-[10px] font-black uppercase tracking-wider">
+                    Perf.
+                  </span>
+                  <div className="p-1.5 bg-warning/20 rounded-lg text-warning">
+                    <Award size={14} />
+                  </div>
+                </div>
+                <span className="text-2xl font-black font-heading text-gradient-vibrant">
+                  {stats30Days.perfectDays}
+                </span>
+                <p className="mt-2 text-text-dim text-[10px] font-semibold leading-tight opacity-70">
+                  Dni
+                </p>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
