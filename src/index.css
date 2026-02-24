@@ -129,14 +129,20 @@ h3 {
 }
 
 .bg-mesh-premium {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
+  pointer-events: none;
   background-color: var(--bg-main);
   background-image:
     radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
     radial-gradient(at 100% 0%, rgba(244, 114, 182, 0.1) 0px, transparent 50%),
     radial-gradient(at 50% 50%, rgba(34, 211, 238, 0.05) 0px, transparent 50%);
+}
+
+.text-glow {
+  text-shadow: 0 0 20px var(--primary-glow);
+}
+
+.border-glow {
+  box-shadow: 0 0 20px var(--primary-glow);
 }
 
 /* Component Styling */
