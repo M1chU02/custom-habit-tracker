@@ -345,3 +345,26 @@ input:focus {
 .text-accent {
   color: var(--accent);
 }
+
+/* Premium Scrollbar */
+.scrollbar-premium::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-premium::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-premium::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  transition: all 0.3s;
+}
+
+.scrollbar-premium:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.scrollbar-premium::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-glow);
+}
