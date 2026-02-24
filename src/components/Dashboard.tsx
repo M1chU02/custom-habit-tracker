@@ -497,7 +497,7 @@ const Dashboard: React.FC = () => {
         </header>
 
         {/* Main horizontal grid: left = habits, right = stats */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-8 items-start">
           {/* LEFT COLUMN — Habits */}
           <div className="space-y-6">
             {/* Habits List */}
@@ -678,7 +678,7 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* RIGHT COLUMN — Stats & Graph */}
-          <div className="space-y-5 xl:sticky xl:top-8">
+          <div className="space-y-5 lg:sticky lg:top-8">
             {/* Day Progress */}
             <Card
               glass
