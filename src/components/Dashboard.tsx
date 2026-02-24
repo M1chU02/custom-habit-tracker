@@ -668,103 +668,126 @@ const Dashboard: React.FC = () => {
 
       {/* COLUMN 3: STATS PANEL */}
       <aside className="relative z-10 w-96 flex-shrink-0 flex flex-col border-l border-white/5 bg-black/20 backdrop-blur-3xl">
-        <div className="flex-1 overflow-y-auto p-8 lg:p-10 flex flex-col gap-6 scrollbar-premium">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="p-2 bg-primary/20 rounded-lg text-primary">
-              <BarChart3 size={16} />
+        <div className="flex-1 overflow-y-auto p-8 lg:p-10 scrollbar-premium flex flex-col">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
+                <BarChart3 size={20} />
+              </div>
+              <h3 className="text-sm font-black text-white uppercase tracking-widest">
+                Statystyki
+              </h3>
             </div>
-            <h3 className="text-sm font-black text-white uppercase tracking-widest">
-              Statystyki
-            </h3>
           </div>
 
-          <Card className="glass-premium p-6 border-primary/20 bg-primary/5 rounded-[2rem]">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
-                Dziś
-              </span>
-              <CheckCircle2 size={16} className="text-primary opacity-50" />
+          {/* Stats Grid */}
+          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-[minmax(0,1fr)]">
+            {/* Today Progress */}
+            <div className="md:col-span-2 xl:col-span-3">
+              <Card className="glass-premium p-6 border-primary/20 bg-primary/5 rounded-[1.75rem] card-hover h-full flex flex-col justify-between">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
+                    Dziś
+                  </span>
+                  <CheckCircle2 size={20} className="text-primary opacity-60" />
+                </div>
+                <div className="flex items-end justify-between mb-4">
+                  <span className="text-4xl font-black text-gradient leading-none">
+                    {progressPercent}%
+                  </span>
+                  <span className="text-xs font-bold text-text-dim bg-white/5 px-3 py-1 rounded-lg border border-white/5">
+                    {completedCount}/{activeHabits.length}
+                  </span>
+                </div>
+                <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_10px_var(--primary-glow)]"
+                  />
+                </div>
+              </Card>
             </div>
-            <div className="flex items-end justify-between mb-4">
-              <span className="text-4xl font-black text-gradient leading-none">
-                {progressPercent}%
-              </span>
-              <span className="text-xs font-bold text-text-dim bg-white/5 px-3 py-1 rounded-lg border border-white/5">
-                {completedCount}/{activeHabits.length}
-              </span>
-            </div>
-            <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
-                className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_10px_var(--primary-glow)]"
-              />
-            </div>
-          </Card>
 
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="glass-premium p-5 border-secondary/20 bg-secondary/5 rounded-[1.5rem] card-hover">
-              <div className="flex flex-col">
-                <span className="text-[9px] font-black uppercase tracking-widest text-text-dim/60 mb-2">
+            {/* Streak */}
+            <Card className="glass-premium p-5 border-secondary/20 bg-secondary/5 rounded-[1.5rem] card-hover flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[9px] font-black uppercase tracking-widest text-text-dim/60">
                   Streak
                 </span>
-                <span className="text-3xl font-black text-secondary">
+                <Target size={20} className="text-secondary opacity-70" />
+              </div>
+              <div>
+                <span className="text-3xl font-black text-secondary leading-none">
                   {currentStreak}
                 </span>
-                <span className="text-[10px] font-bold text-text-dim/40 uppercase mt-1">
+                <span className="block text-[10px] font-bold text-text-dim/40 uppercase mt-2">
                   Dni 🔥
                 </span>
               </div>
             </Card>
-            <Card className="glass-premium p-5 border-accent/20 bg-accent/5 rounded-[1.5rem] card-hover">
-              <div className="flex flex-col">
-                <span className="text-[9px] font-black uppercase tracking-widest text-text-dim/60 mb-2">
+
+            {/* Perfect days */}
+            <Card className="glass-premium p-5 border-accent/20 bg-accent/5 rounded-[1.5rem] card-hover flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[9px] font-black uppercase tracking-widest text-text-dim/60">
                   Idealne
                 </span>
-                <span className="text-3xl font-black text-accent">
+                <Award size={20} className="text-accent opacity-70" />
+              </div>
+              <div>
+                <span className="text-3xl font-black text-accent leading-none">
                   {stats30Days.perfectDays}
                 </span>
-                <span className="text-[10px] font-bold text-text-dim/40 uppercase mt-1">
+                <span className="block text-[10px] font-bold text-text-dim/40 uppercase mt-2">
                   Dni (30d)
                 </span>
               </div>
             </Card>
-          </div>
 
-          <Card className="glass-premium p-6 border-white/5 bg-white/[0.02] rounded-[2rem] overflow-hidden">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-dim/60 mb-6">
-              Aktywność roczna
-            </h4>
-            <div className="px-1 scale-[1.02]">
-              <ContributionGraph
-                data={yearlyHistory}
-                totalHabits={activeHabits.length}
-              />
-            </div>
-          </Card>
-
-          <div className="flex flex-col gap-3">
-            <div className="p-4 glass-premium bg-success/5 border-success/20 rounded-xl flex items-center justify-between">
-              <div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-success/60 block mb-0.5">
+            {/* Last 7 days */}
+            <Card className="glass-premium p-5 bg-success/5 border-success/20 rounded-[1.5rem] card-hover flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[9px] font-black uppercase tracking-widest text-success/60">
                   Ostatnie 7 dni
                 </span>
-                <span className="text-xl font-black text-white">
+                <TrendingUp size={20} className="text-success opacity-70" />
+              </div>
+              <div>
+                <span className="text-3xl font-black text-white leading-none">
                   {stats7Days.completionRate}%
                 </span>
               </div>
-              <Target size={20} className="text-success opacity-50" />
-            </div>
-            <div className="p-4 glass-premium bg-accent/5 border-accent/20 rounded-xl flex items-center justify-between">
-              <div>
-                <span className="text-[9px] font-black uppercase tracking-widest text-accent/60 block mb-0.5">
+            </Card>
+
+            {/* Last 30 days */}
+            <Card className="glass-premium p-5 bg-accent/5 border-accent/20 rounded-[1.5rem] card-hover flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[9px] font-black uppercase tracking-widest text-accent/60">
                   Ostatnie 30 dni
                 </span>
-                <span className="text-xl font-black text-white">
+                <BarChart3 size={20} className="text-accent opacity-70" />
+              </div>
+              <div>
+                <span className="text-3xl font-black text-white leading-none">
                   {stats30Days.completionRate}%
                 </span>
               </div>
-              <TrendingUp size={20} className="text-accent opacity-50" />
+            </Card>
+
+            {/* Yearly activity graph */}
+            <div className="md:col-span-2 xl:col-span-3">
+              <Card className="glass-premium p-6 border-white/5 bg-white/[0.02] rounded-[2rem] overflow-hidden h-full flex flex-col">
+                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-dim/60 mb-6">
+                  Aktywność roczna
+                </h4>
+                <div className="px-1 scale-[1.02] flex-1 flex items-center">
+                  <ContributionGraph
+                    data={yearlyHistory}
+                    totalHabits={activeHabits.length}
+                  />
+                </div>
+              </Card>
             </div>
           </div>
         </div>
