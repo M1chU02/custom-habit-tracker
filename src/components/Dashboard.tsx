@@ -11,7 +11,6 @@ import {
   addMonths,
   subMonths,
   isSameDay,
-  isSameMonth,
   startOfMonth,
   endOfMonth,
   startOfWeek,
@@ -65,7 +64,19 @@ import { Toaster, toast } from "sonner";
 import NotificationManager from "./NotificationManager";
 import ContributionGraph from "./ContributionGraph";
 
-const DAY_LABELS = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+const MONTH_DAY_LABELS = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+const CELL_SIZE = 11;
+const CELL_GAP = 2;
+const STEP = CELL_SIZE + CELL_GAP;
+const DAY_LABEL_WIDTH = 22;
+
+const intensityColor: Record<0 | 1 | 2 | 3 | 4, string> = {
+  0: "rgba(255,255,255,0.04)",
+  1: "rgba(139,92,246,0.25)",
+  2: "rgba(139,92,246,0.45)",
+  3: "rgba(139,92,246,0.70)",
+  4: "rgba(139,92,246,1)",
+};
 
 interface MonthCalendarProps {
   selectedDate: Date;
@@ -90,7 +101,7 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
   const goPrevMonth = () => onSelectDate(subMonths(selectedDate, 1));
   const goNextMonth = () => onSelectDate(addMonths(selectedDate, 1));
 
-  const getDayIntensity = (date: Date) => {
+  const getIntensity = (date: Date): 0 | 1 | 2 | 3 | 4 => {
     const key = format(date, "yyyy-MM-dd");
     const count = yearlyHistory[key] ?? 0;
     if (!count || totalHabits === 0) return 0;
@@ -100,6 +111,23 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
     if (pct <= 0.75) return 3;
     return 4;
   };
+
+  const weeks: Date[][] = [];
+  let week: Date[] = [];
+  days.forEach((date) => {
+    week.push(date);
+    if (week.length === 7) {
+      weeks.push(week);
+      week = [];
+    }
+  });
+  if (week.length > 0) weeks.push(week);
+
+  const cols = weeks.length;
+  const totalWidth = DAY_LABEL_WIDTH + cols * STEP;
+  const headerHeight = 20;
+  const gridHeight = 7 * STEP;
+  const svgHeight = headerHeight + gridHeight;
 
   return (
     <div className="mt-8 pt-6 border-t border-white/5">
@@ -123,56 +151,84 @@ const MonthCalendar: React.FC<MonthCalendarProps> = ({
           </button>
         </div>
       </div>
+      <div className="w-full overflow-x-auto pb-2">
+        <svg
+          width={totalWidth}
+          height={svgHeight}
+          style={{ display: "block", overflow: "visible" }}>
+          {/* Day-of-week labels */}
+          {MONTH_DAY_LABELS.map((label, row) => (
+            <text
+              key={row}
+              x={0}
+              y={headerHeight + row * STEP + CELL_SIZE - 1}
+              fontSize={9}
+              fill="rgba(255,255,255,0.30)"
+              fontFamily="inherit">
+              {row % 2 === 0 ? label : ""}
+            </text>
+          ))}
+
+          {/* Grid cells - ten sam styl co ContributionGraph */}
+          {weeks.map((week, colIndex) =>
+            week.map((date, rowIndex) => {
+              const dateStr = format(date, "yyyy-MM-dd");
+              const intensity = getIntensity(date);
+              const x = DAY_LABEL_WIDTH + colIndex * STEP;
+              const y = headerHeight + rowIndex * STEP;
+              const isToday = dateStr === format(today, "yyyy-MM-dd");
+              const isSelected = dateStr === format(selectedDate, "yyyy-MM-dd");
+
+              return (
+                <g key={dateStr}>
+                  <rect
+                    x={x}
+                    y={y}
+                    width={CELL_SIZE}
+                    height={CELL_SIZE}
+                    rx={2}
+                    ry={2}
+                    fill={intensityColor[intensity]}
+                    stroke={
+                      isSelected
+                        ? "rgba(139,92,246,0.9)"
+                        : isToday
+                          ? "rgba(139,92,246,0.6)"
+                          : "rgba(255,255,255,0.04)"
+                    }
+                    strokeWidth={isSelected ? 1.5 : isToday ? 1 : 0.5}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => onSelectDate(date)}>
+                    <title>
+                      {format(date, "d MMMM yyyy", { locale: pl })}:{" "}
+                      {(yearlyHistory[dateStr] ?? 0)} ukończonych nawyków —
+                      kliknij aby wybrać
+                    </title>
+                  </rect>
+                </g>
+              );
+            }),
+          )}
+        </svg>
+      </div>
+      {/* Legenda - jak w ContributionGraph */}
       <div
-        className="text-center"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(7, 1fr)",
-          gap: "2px",
-        }}>
-        {DAY_LABELS.map((d) => (
+        className="flex items-center justify-end gap-2 mt-3"
+        style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>
+        <span>Mniej</span>
+        {([0, 1, 2, 3, 4] as const).map((lvl) => (
           <div
-            key={d}
-            className="text-[9px] font-bold text-text-dim/60 py-1 uppercase">
-            {d}
-          </div>
+            key={lvl}
+            style={{
+              width: CELL_SIZE,
+              height: CELL_SIZE,
+              borderRadius: 2,
+              backgroundColor: intensityColor[lvl],
+              border: "0.5px solid rgba(255,255,255,0.04)",
+            }}
+          />
         ))}
-        {days.map((date) => {
-          const isCurrentMonth = isSameMonth(date, selectedDate);
-          const isSelected = isSameDay(date, selectedDate);
-          const isToday = isSameDay(date, today);
-          const intensity = getDayIntensity(date);
-          return (
-            <button
-              key={date.toISOString()}
-              onClick={() => onSelectDate(date)}
-              className={clsx(
-                "aspect-square flex flex-col items-center justify-center rounded-lg text-[11px] font-bold transition-all",
-                !isCurrentMonth && "text-text-dim/30",
-                isCurrentMonth && "text-text-main",
-                isSelected && "bg-primary text-white ring-2 ring-primary/50",
-                !isSelected && isToday && "ring-1 ring-primary/50",
-                !isSelected && "hover:bg-white/10",
-              )}>
-              {format(date, "d")}
-              {intensity > 0 && isCurrentMonth && !isSelected && (
-                <span
-                  className="w-1 h-1 rounded-full mt-0.5 opacity-80"
-                  style={{
-                    backgroundColor:
-                      intensity >= 4
-                        ? "rgba(139,92,246,1)"
-                        : intensity >= 3
-                          ? "rgba(139,92,246,0.7)"
-                          : intensity >= 2
-                            ? "rgba(139,92,246,0.45)"
-                            : "rgba(139,92,246,0.25)",
-                  }}
-                />
-              )}
-            </button>
-          );
-        })}
+        <span>Więcej</span>
       </div>
     </div>
   );
