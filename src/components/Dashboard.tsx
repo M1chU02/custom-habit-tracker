@@ -12,13 +12,11 @@ import {
   Plus,
   LogOut,
   Calendar,
-  TrendingUp,
   CheckCircle2,
   Circle,
   Archive,
   Trash2,
   Target,
-  Award,
   BarChart3,
   GripVertical,
   Bell,
@@ -26,6 +24,12 @@ import {
   AlignLeft,
   ChevronLeft,
   ChevronRight,
+  Search,
+  User,
+  Settings,
+  ListTodo,
+  Tag,
+  Flame,
 } from "lucide-react";
 import {
   DndContext,
@@ -390,10 +394,6 @@ const Dashboard: React.FC = () => {
   const completedCount = activeHabits.filter(
     (h) => dayData?.checks[h.id],
   ).length;
-  const progressPercent =
-    activeHabits.length > 0
-      ? Math.round((completedCount / activeHabits.length) * 100)
-      : 0;
 
   return (
     <div className="h-screen w-screen overflow-hidden relative flex selection:bg-primary/30">
@@ -403,24 +403,14 @@ const Dashboard: React.FC = () => {
       <Toaster position="top-center" richColors theme="dark" closeButton />
       <NotificationManager habits={habits} dayData={dayData} />
 
-      {/* COLUMN 1: SIDEBAR (User & Nav) */}
+      {/* COLUMN 1: SIDEBAR (User & Nav) - layout ze zdjęcia */}
       <aside className="relative z-20 w-72 flex-shrink-0 flex flex-col border-r border-white/5 bg-black/40 backdrop-blur-3xl">
-        <div className="p-8 flex flex-col h-full">
-          {/* Logo Area */}
-          <div className="flex items-center gap-2.5 mb-10">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
-              <Award className="text-white" size={16} />
-            </div>
-            <h1 className="text-lg font-black tracking-tight text-white italic uppercase">
-              Habitu
-            </h1>
-          </div>
-
-          {/* User Profile */}
-          <div className="flex flex-col items-center text-center mb-10">
+        <div className="p-6 flex flex-col h-full">
+          {/* User Profile - na górze jak na zdjęciu */}
+          <div className="flex flex-col items-center text-center mb-8">
             <motion.div
-              whileHover={{ scale: 1.05, rotate: 1 }}
-              className="w-20 h-20 rounded-[2rem] overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center text-primary font-black text-2xl shadow-xl mb-4 ring-2 ring-white/5">
+              whileHover={{ scale: 1.03 }}
+              className="w-24 h-24 rounded-2xl overflow-hidden border border-white/10 bg-primary/10 flex items-center justify-center text-primary font-black text-3xl shadow-xl mb-4 ring-2 ring-white/5">
               {user?.photoURL ? (
                 <img
                   src={user.photoURL}
@@ -443,70 +433,91 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Date Picker */}
-          <div className="flex flex-col gap-3 mb-auto">
-            <div className="bg-white/5 rounded-[1.5rem] border border-white/10 p-3 shadow-sm px-4">
-              <div className="flex items-center justify-between mb-3 pt-0.5">
-                <div className="flex items-center gap-2">
-                  <Calendar size={12} className="text-primary opacity-50" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-text-dim/60">
-                    Kalendarz
-                  </span>
-                </div>
-                {!isTodaySelected && (
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    onClick={goToToday}
-                    className="text-[9px] font-black uppercase tracking-tight text-primary hover:text-white transition-colors">
-                    Dzisiaj
-                  </motion.button>
-                )}
-              </div>
-              <div className="flex items-center justify-between">
-                <button
-                  onClick={goToPreviousDay}
-                  className="p-1.5 text-text-dim hover:text-white transition-colors">
-                  <ChevronLeft size={18} />
-                </button>
-                <div className="flex-1 text-center">
-                  <div className="text-sm font-black text-white leading-none mb-0.5">
-                    {format(selectedDate, "d MMMM", { locale: pl })}
-                  </div>
-                  <div className="text-[10px] font-bold text-text-dim/40 uppercase">
-                    {format(selectedDate, "EEEE", { locale: pl })}
-                  </div>
-                </div>
-                <button
-                  onClick={goToNextDay}
-                  disabled={isTodaySelected}
-                  className={clsx(
-                    "p-1.5 transition-colors",
-                    isTodaySelected
-                      ? "text-white/5"
-                      : "text-text-dim hover:text-white",
-                  )}>
-                  <ChevronRight size={18} />
-                </button>
-              </div>
+          {/* Nawigacja - Kalendarz, miesiąc, dzień */}
+          <nav className="flex flex-col gap-1 mb-auto">
+            <button
+              onClick={goToToday}
+              className="flex items-center gap-3 py-3 px-4 rounded-xl text-left hover:bg-white/5 transition-colors group">
+              <Calendar size={18} className="text-primary opacity-70 group-hover:opacity-100" />
+              <span className="text-sm font-bold text-text-main">Kalendarz</span>
+            </button>
+            <button className="flex items-center gap-3 py-3 px-4 rounded-xl text-left hover:bg-white/5 transition-colors group">
+              <ListTodo size={18} className="text-primary opacity-70 group-hover:opacity-100" />
+              <span className="text-sm font-bold text-text-main">
+                {format(selectedDate, "LLLL", { locale: pl })}
+              </span>
+            </button>
+            <button className="flex items-center gap-3 py-3 px-4 rounded-xl text-left hover:bg-white/5 transition-colors group">
+              <Tag size={18} className="text-primary opacity-70 group-hover:opacity-100" />
+              <span className="text-sm font-bold text-text-main lowercase first-letter:uppercase">
+                {format(selectedDate, "EEEE", { locale: pl })}
+              </span>
+            </button>
+          </nav>
+
+          {/* Date Picker - ukryty w nav, ale nawigacja daty */}
+          <div className="flex items-center gap-2 mb-4 px-2">
+            <button
+              onClick={goToPreviousDay}
+              className="p-1.5 text-text-dim hover:text-white transition-colors rounded-lg hover:bg-white/5">
+              <ChevronLeft size={16} />
+            </button>
+            <div className="flex-1 text-center text-xs font-bold text-text-dim">
+              {format(selectedDate, "d MMM", { locale: pl })}
+            </div>
+            <button
+              onClick={goToNextDay}
+              disabled={isTodaySelected}
+              className={clsx(
+                "p-1.5 rounded-lg transition-colors",
+                isTodaySelected ? "text-white/5" : "text-text-dim hover:text-white hover:bg-white/5",
+              )}>
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          {/* XP Progress Bar - 50/100 */}
+          <div className="mb-6 px-2">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
+                Postęp
+              </span>
+              <span className="text-xs font-bold text-text-main">
+                {completedCount * 10}/{Math.max(activeHabits.length, 1) * 10} XP
+              </span>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${activeHabits.length > 0 ? (completedCount / activeHabits.length) * 100 : 0}%`,
+                }}
+                className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+              />
             </div>
           </div>
 
-          {/* Logout */}
-          <Button
-            variant="ghost"
-            onClick={logout}
-            className="w-full justify-start rounded-xl h-12 px-5 opacity-50 hover:opacity-100 hover:bg-error/5 hover:text-error transition-all">
-            <LogOut size={16} className="mr-3" />
-            <span className="text-xs font-bold">Wyloguj</span>
-          </Button>
+          {/* Settings + Logout */}
+          <div className="flex flex-col gap-1">
+            <button
+              className="flex items-center gap-3 py-3 px-4 rounded-xl text-left hover:bg-white/5 transition-colors text-text-dim hover:text-text-main">
+              <Settings size={18} />
+              <span className="text-xs font-bold">Ustawienia</span>
+            </button>
+            <button
+              onClick={logout}
+              className="flex items-center gap-3 py-2 px-4 rounded-xl text-left hover:bg-error/10 transition-colors text-text-dim hover:text-error">
+              <LogOut size={16} />
+              <span className="text-xs font-bold">Wyloguj</span>
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* COLUMN 2: HABITS (Main Content) */}
       <main className="relative z-10 flex-1 flex flex-col min-w-0">
         <div className="flex flex-col h-full p-10 lg:p-12">
-          {/* Header */}
+          {/* Header - layout ze zdjęcia: tytuł, przycisk, ikony */}
           <div className="flex items-center justify-between mb-10 flex-shrink-0">
             <div>
               <div className="px-2.5 py-1 bg-white/5 rounded-lg inline-block border border-white/10 mb-2">
@@ -518,13 +529,26 @@ const Dashboard: React.FC = () => {
                 Twoje Nawyki
               </h1>
             </div>
-            <Button
-              variant="primary"
-              onClick={() => setIsAddingHabit(true)}
-              className="rounded-xl px-6 h-12 text-sm shadow-primary-glow border-0">
-              <Plus size={18} className="mr-2" />
-              Nowy nawyk
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="primary"
+                onClick={() => setIsAddingHabit(true)}
+                className="rounded-xl px-6 h-12 text-sm shadow-primary-glow border-0">
+                <Plus size={18} className="mr-2" />
+                Nowy nawyk
+              </Button>
+              <div className="flex items-center gap-2 ml-2">
+                <button className="p-2.5 rounded-xl text-text-dim hover:text-text-main hover:bg-white/5 transition-colors">
+                  <Search size={20} />
+                </button>
+                <button className="p-2.5 rounded-xl text-text-dim hover:text-text-main hover:bg-white/5 transition-colors relative">
+                  <Bell size={20} />
+                </button>
+                <button className="p-2.5 rounded-xl text-text-dim hover:text-text-main hover:bg-white/5 transition-colors">
+                  <User size={20} />
+                </button>
+              </div>
+            </div>
           </div>
 
           <AnimatePresence>
@@ -659,6 +683,21 @@ const Dashboard: React.FC = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Aktywność roczna - w głównej treści jak na zdjęciu */}
+                  <div className="pt-12 mt-8 border-t border-white/5">
+                    <Card className="glass-premium p-6 border-white/5 bg-white/[0.02] rounded-[2rem] overflow-hidden">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-text-dim/60 mb-6">
+                        Aktywność roczna
+                      </h4>
+                      <div className="px-1">
+                        <ContributionGraph
+                          data={yearlyHistory}
+                          totalHabits={activeHabits.length}
+                        />
+                      </div>
+                    </Card>
+                  </div>
                 </div>
               </SortableContext>
             </DndContext>
@@ -666,128 +705,92 @@ const Dashboard: React.FC = () => {
         </div>
       </main>
 
-      {/* COLUMN 3: STATS PANEL */}
-      <aside className="relative z-10 w-96 flex-shrink-0 flex flex-col border-l border-white/5 bg-black/20 backdrop-blur-3xl">
-        <div className="flex-1 overflow-y-auto p-8 lg:p-10 scrollbar-premium flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
-                <BarChart3 size={20} />
-              </div>
-              <h3 className="text-sm font-black text-white uppercase tracking-widest">
-                Statystyki
-              </h3>
-            </div>
-          </div>
+      {/* COLUMN 3: STATS PANEL - layout pionowy jak na zdjęciu */}
+      <aside className="relative z-10 w-80 flex-shrink-0 flex flex-col border-l border-white/5 bg-black/20 backdrop-blur-3xl">
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8 scrollbar-premium flex flex-col">
+          <h3 className="text-lg font-black text-white mb-6 uppercase tracking-tight">
+            Statystyki
+          </h3>
 
-          {/* Stats Grid */}
-          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-[minmax(0,1fr)]">
-            {/* Today Progress */}
-            <div className="md:col-span-2 xl:col-span-3">
-              <Card className="glass-premium p-6 border-primary/20 bg-primary/5 rounded-[1.75rem] card-hover h-full flex flex-col justify-between">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
-                    Dziś
-                  </span>
-                  <CheckCircle2 size={20} className="text-primary opacity-60" />
-                </div>
-                <div className="flex items-end justify-between mb-4">
-                  <span className="text-4xl font-black text-gradient leading-none">
-                    {progressPercent}%
-                  </span>
-                  <span className="text-xs font-bold text-text-dim bg-white/5 px-3 py-1 rounded-lg border border-white/5">
-                    {completedCount}/{activeHabits.length}
-                  </span>
-                </div>
-                <div className="h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_10px_var(--primary-glow)]"
-                  />
-                </div>
-              </Card>
+          {/* Statystyki - lista pionowa */}
+          <div className="flex flex-col gap-5">
+            {/* Dziś */}
+            <div className="flex items-center justify-between py-3 border-b border-white/5">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
+                  Dziś
+                </span>
+                <span className="flex items-center gap-1.5 text-text-dim text-sm">
+                  <Flame size={14} style={{ color: "#fb923c" }} />
+                  {currentStreak} dni
+                  <CheckCircle2 size={14} className="text-primary opacity-60" />
+                </span>
+              </div>
+              <span className="text-xl font-black text-text-main">
+                {completedCount}/{activeHabits.length}
+              </span>
             </div>
 
-            {/* Streak */}
-            <Card className="glass-premium p-5 border-secondary/20 bg-secondary/5 rounded-[1.5rem] card-hover flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[9px] font-black uppercase tracking-widest text-text-dim/60">
-                  Streak
+            {/* Idealne dni */}
+            <div className="flex items-center justify-between py-3 border-b border-white/5">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
+                  Idealne dni
                 </span>
-                <Target size={20} className="text-secondary opacity-70" />
+                <span className="flex items-center gap-1.5 text-text-dim text-sm">
+                  <Flame size={14} style={{ color: "#fb923c" }} />
+                  {stats30Days.perfectDays} dni
+                </span>
+                <span className="flex items-center gap-1 text-text-dim/70 text-xs">
+                  <Calendar size={12} />
+                  {stats30Days.perfectDays} dni (30d)
+                </span>
               </div>
-              <div>
-                <span className="text-3xl font-black text-secondary leading-none">
-                  {currentStreak}
-                </span>
-                <span className="block text-[10px] font-bold text-text-dim/40 uppercase mt-2">
-                  Dni 🔥
-                </span>
-              </div>
-            </Card>
+            </div>
 
-            {/* Perfect days */}
-            <Card className="glass-premium p-5 border-accent/20 bg-accent/5 rounded-[1.5rem] card-hover flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[9px] font-black uppercase tracking-widest text-text-dim/60">
-                  Idealne
-                </span>
-                <Award size={20} className="text-accent opacity-70" />
-              </div>
-              <div>
-                <span className="text-3xl font-black text-accent leading-none">
-                  {stats30Days.perfectDays}
-                </span>
-                <span className="block text-[10px] font-bold text-text-dim/40 uppercase mt-2">
-                  Dni (30d)
-                </span>
-              </div>
-            </Card>
-
-            {/* Last 7 days */}
-            <Card className="glass-premium p-5 bg-success/5 border-success/20 rounded-[1.5rem] card-hover flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[9px] font-black uppercase tracking-widest text-success/60">
+            {/* Ostatnie 7 dni */}
+            <div className="flex items-center justify-between py-3 border-b border-white/5">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
                   Ostatnie 7 dni
                 </span>
-                <TrendingUp size={20} className="text-success opacity-70" />
-              </div>
-              <div>
-                <span className="text-3xl font-black text-white leading-none">
+                <span className="flex items-center gap-1.5 text-text-dim text-sm">
+                  <BarChart3 size={14} />
                   {stats7Days.completionRate}%
                 </span>
               </div>
-            </Card>
+              <span className="text-xl font-black text-text-main">
+                {stats7Days.completionRate}%
+              </span>
+            </div>
 
-            {/* Last 30 days */}
-            <Card className="glass-premium p-5 bg-accent/5 border-accent/20 rounded-[1.5rem] card-hover flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[9px] font-black uppercase tracking-widest text-accent/60">
+            {/* Ostatnie 30 dni */}
+            <div className="flex items-center justify-between py-3 border-b border-white/5">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
                   Ostatnie 30 dni
                 </span>
-                <BarChart3 size={20} className="text-accent opacity-70" />
-              </div>
-              <div>
-                <span className="text-3xl font-black text-white leading-none">
+                <span className="flex items-center gap-1.5 text-text-dim text-sm">
+                  <BarChart3 size={14} />
                   {stats30Days.completionRate}%
                 </span>
               </div>
-            </Card>
+              <span className="text-xl font-black text-text-main">
+                {stats30Days.completionRate}%
+              </span>
+            </div>
+          </div>
 
-            {/* Yearly activity graph */}
-            <div className="md:col-span-2 xl:col-span-3">
-              <Card className="glass-premium p-6 border-white/5 bg-white/[0.02] rounded-[2rem] overflow-hidden h-full flex flex-col">
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-text-dim/60 mb-6">
-                  Aktywność roczna
-                </h4>
-                <div className="px-1 scale-[1.02] flex-1 flex items-center">
-                  <ContributionGraph
-                    data={yearlyHistory}
-                    totalHabits={activeHabits.length}
-                  />
-                </div>
-              </Card>
+          {/* Mniejszy wykres aktywności w panelu bocznym */}
+          <div className="mt-8 pt-6 border-t border-white/5">
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-dim/60 mb-4">
+              Przegląd
+            </h4>
+            <div className="scale-90 origin-top-left">
+              <ContributionGraph
+                data={yearlyHistory}
+                totalHabits={activeHabits.length}
+              />
             </div>
           </div>
         </div>
