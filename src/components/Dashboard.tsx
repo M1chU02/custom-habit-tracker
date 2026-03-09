@@ -4,7 +4,20 @@ import { habitService } from "../services/habitService";
 import type { Habit, DayCompletion } from "../types";
 import Button from "./Button";
 import Card from "./Card";
-import { format, addDays, subDays, isSameDay } from "date-fns";
+import {
+  format,
+  addDays,
+  subDays,
+  addMonths,
+  subMonths,
+  isSameDay,
+  isSameMonth,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+} from "date-fns";
 import { pl } from "date-fns/locale";
 import { motion, AnimatePresence } from "framer-motion";
 import { clsx } from "clsx";
@@ -51,6 +64,119 @@ import { CSS } from "@dnd-kit/utilities";
 import { Toaster, toast } from "sonner";
 import NotificationManager from "./NotificationManager";
 import ContributionGraph from "./ContributionGraph";
+
+const DAY_LABELS = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+
+interface MonthCalendarProps {
+  selectedDate: Date;
+  onSelectDate: (date: Date) => void;
+  yearlyHistory: Record<string, number>;
+  totalHabits: number;
+}
+
+const MonthCalendar: React.FC<MonthCalendarProps> = ({
+  selectedDate,
+  onSelectDate,
+  yearlyHistory,
+  totalHabits,
+}) => {
+  const monthStart = startOfMonth(selectedDate);
+  const monthEnd = endOfMonth(selectedDate);
+  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  const today = new Date();
+
+  const goPrevMonth = () => onSelectDate(subMonths(selectedDate, 1));
+  const goNextMonth = () => onSelectDate(addMonths(selectedDate, 1));
+
+  const getDayIntensity = (date: Date) => {
+    const key = format(date, "yyyy-MM-dd");
+    const count = yearlyHistory[key] ?? 0;
+    if (!count || totalHabits === 0) return 0;
+    const pct = count / totalHabits;
+    if (pct <= 0.25) return 1;
+    if (pct <= 0.5) return 2;
+    if (pct <= 0.75) return 3;
+    return 4;
+  };
+
+  return (
+    <div className="mt-8 pt-6 border-t border-white/5">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-[10px] font-black uppercase tracking-widest text-text-dim/60">
+          Kalendarz
+        </h4>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={goPrevMonth}
+            className="p-1.5 rounded-lg text-text-dim hover:text-text-main hover:bg-white/5 transition-colors">
+            <ChevronLeft size={14} />
+          </button>
+          <span className="text-xs font-bold text-text-main min-w-[100px] text-center capitalize">
+            {format(selectedDate, "LLLL yyyy", { locale: pl })}
+          </span>
+          <button
+            onClick={goNextMonth}
+            className="p-1.5 rounded-lg text-text-dim hover:text-text-main hover:bg-white/5 transition-colors">
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      </div>
+      <div
+        className="text-center"
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 1fr)",
+          gap: "2px",
+        }}>
+        {DAY_LABELS.map((d) => (
+          <div
+            key={d}
+            className="text-[9px] font-bold text-text-dim/60 py-1 uppercase">
+            {d}
+          </div>
+        ))}
+        {days.map((date) => {
+          const isCurrentMonth = isSameMonth(date, selectedDate);
+          const isSelected = isSameDay(date, selectedDate);
+          const isToday = isSameDay(date, today);
+          const intensity = getDayIntensity(date);
+          return (
+            <button
+              key={date.toISOString()}
+              onClick={() => onSelectDate(date)}
+              className={clsx(
+                "aspect-square flex flex-col items-center justify-center rounded-lg text-[11px] font-bold transition-all",
+                !isCurrentMonth && "text-text-dim/30",
+                isCurrentMonth && "text-text-main",
+                isSelected && "bg-primary text-white ring-2 ring-primary/50",
+                !isSelected && isToday && "ring-1 ring-primary/50",
+                !isSelected && "hover:bg-white/10",
+              )}>
+              {format(date, "d")}
+              {intensity > 0 && isCurrentMonth && !isSelected && (
+                <span
+                  className="w-1 h-1 rounded-full mt-0.5 opacity-80"
+                  style={{
+                    backgroundColor:
+                      intensity >= 4
+                        ? "rgba(139,92,246,1)"
+                        : intensity >= 3
+                          ? "rgba(139,92,246,0.7)"
+                          : intensity >= 2
+                            ? "rgba(139,92,246,0.45)"
+                            : "rgba(139,92,246,0.25)",
+                  }}
+                />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 interface SortableHabitItemProps {
   habit: Habit;
@@ -781,18 +907,13 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Mniejszy wykres aktywności w panelu bocznym */}
-          <div className="mt-8 pt-6 border-t border-white/5">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-text-dim/60 mb-4">
-              Przegląd
-            </h4>
-            <div className="scale-90 origin-top-left">
-              <ContributionGraph
-                data={yearlyHistory}
-                totalHabits={activeHabits.length}
-              />
-            </div>
-          </div>
+          {/* Kalendarz miesięczny */}
+          <MonthCalendar
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            yearlyHistory={yearlyHistory}
+            totalHabits={activeHabits.length}
+          />
         </div>
       </aside>
     </div>
